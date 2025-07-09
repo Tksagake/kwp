@@ -49,7 +49,7 @@ export default function Sidebar({ className }: SidebarProps) {
         </div>
       </div>
 
-      <nav className="flex-1 p-4 bg-indigo-500 space-y-2">
+      <nav className="flex-1 p-4 bg-indigo-400 space-y-2">
         {navigation.map((item) => {
           const isActive = pathname === item.href
           const Icon = item.icon
@@ -72,7 +72,7 @@ export default function Sidebar({ className }: SidebarProps) {
         })}
       </nav>
 
-      <div className="p-4 border-t">
+      <div className="p-4 border-t bg-indigo-400">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
             <span className="text-green-600 font-bold text-xs">A</span>
