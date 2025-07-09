@@ -16,9 +16,11 @@ export default function Header() {
   return (
     <header className="bg-white border-b px-6 py-4 lg:pl-72">
       <div className="flex flex-col items-center justify-center gap-4">
-        <h1 className="text-sm font-bold text-[#003776] text-left">
+        <div className="flex items-left justify-between w-full">
+            <h1 className="text-sm font-bold text-[#003776] text-left">
           KENYA NATIONAL WASTE PICKERS WELFARE ASSOCIATION MANAGEMENT SYSTEM
-        </h1>
+           </h1>
+        </div>
         <div className="flex items-center justify-between w-full">
           
           <div className="flex items-center gap-4">
