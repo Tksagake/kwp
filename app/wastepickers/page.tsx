@@ -58,7 +58,7 @@ export default function WastePickers() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCounty, setSelectedCounty] = useState<string>('')
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage] = useState(10)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
   const [newWastePicker, setNewWastePicker] = useState<Partial<WastePicker>>({})
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -144,13 +144,11 @@ export default function WastePickers() {
           id_number: cols[6].trim(),
         };
       }).filter(Boolean);
-
       if (wastePickers.length === 0) {
         showMessage("No valid waste pickers found in the CSV.", "error");
         setLoading(false);
         return;
       }
-
       const { error } = await supabase.from("waste_pickers").insert(wastePickers);
       if (error) {
         showMessage(`Error inserting waste pickers: ${error.message}`, "error");
@@ -210,6 +208,13 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
       XLSX.writeFile(workbook, "WastePickers.xlsx");
     } else if (format === 'pdf') {
       const doc = new jsPDF();
+      // Add logo
+      const logoUrl = '/logo.jpg'; // 
+      doc.addImage(logoUrl, 'PNG', 15, 10, 30, 15);
+      // Add title
+      doc.setFontSize(16);
+      const countyName = selectedCounty || 'All Counties';
+      doc.text(`KeNaWPWA Waste Pickers - ${countyName}`, 50, 25);
       autoTable(doc, {
         head: [['First Name', 'Last Name', 'Registration ID', 'Mobile Number', 'Email', 'County', 'ID Number', 'Joined']],
         body: dataToExport.map(picker => [
@@ -529,8 +534,27 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
               </Table>
             </div>
             <div className="flex items-center justify-between px-4 py-4">
-              <div className="text-sm text-gray-500">
-                Showing {startIndex + 1} to {Math.min(endIndex, filteredWastePickers.length)} of {filteredWastePickers.length} entries
+              <div className="flex items-center gap-4">
+                <div className="text-sm text-gray-500">
+                  Showing {startIndex + 1} to {Math.min(endIndex, filteredWastePickers.length)} of {filteredWastePickers.length} entries
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">Entries per page:</span>
+                  <Select value={itemsPerPage.toString()} onValueChange={(value) => {
+                    setItemsPerPage(Number(value));
+                    setCurrentPage(1);
+                  }}>
+                    <SelectTrigger className="w-20">
+                      <SelectValue placeholder="10" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button

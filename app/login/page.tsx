@@ -1,5 +1,4 @@
 'use client'
-
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -8,26 +7,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Shield, Loader2 } from 'lucide-react'
+import { Shield, Loader2, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
-
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
-
       if (error) {
         setError(error.message)
       } else {
@@ -40,18 +38,22 @@ export default function LoginPage() {
     }
   }
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-slate-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-600">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="w-36 h-36 bg-[#003776] rounded-full flex items-center justify-center">
-             <img src="/logo.jpg" alt="KeNaWPWA Logo" className="w-30 h-30 " />
+              <img src="/logo.jpg" alt="KeNaWPWA Logo" className="w-30 h-30" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-[#003776]">KeNaWPWA Admin</CardTitle>
-          <CardDescription>
-            Kenya National Waste Pickers Welfare Association
+          <CardTitle className="text-2xl font-bold text-[#003776]">KeNaWPWA Super Admin</CardTitle>
+          <CardDescription className="text-3xl text-gray-600">
+            KENYA NATIONAL WASTE PICKERS WELFARE ASSOCIATION
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -69,23 +71,34 @@ export default function LoginPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full"
+                  onClick={togglePasswordVisibility}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
             </div>
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <Button 
-              type="submit" 
-              className="w-full bg-[#003776] hover:bg-[#4e73df]" 
+            <Button
+              type="submit"
+              className="w-full bg-[#003776] hover:bg-[#4e73df]"
               disabled={loading}
             >
               {loading ? (
