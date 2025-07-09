@@ -74,7 +74,7 @@ export default function Dashboard() {
           // waste_pickers is now an array, so use the first element if available
           const county = item.waste_pickers && item.waste_pickers.length > 0
             ? item.waste_pickers[0].county
-            : 'Unknown County';
+            : 'Kenya';
           if (!acc[county]) {
             acc[county] = 0;
           }
