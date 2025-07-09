@@ -524,7 +524,7 @@ export default function Contributions() {
                               <DialogTitle>Confirm Delete</DialogTitle>
                               </DialogHeader>
                               <div className="py-4">
-                              Are you sure you want to delete <span className="font-semibold">{ contribution.waste_pickers.first_name}'s Contribution? </span>? This action cannot be undone.
+                              Are you sure you want to delete <span className="font-semibold">{ contribution.waste_pickers.first_name} { contribution.waste_pickers.last_name} Contribution? </span>? This action cannot be undone.
                               </div>
                               <div className="flex gap-2 justify-end">
                               <DialogTrigger asChild>
