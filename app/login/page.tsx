@@ -45,10 +45,10 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-600">
       <div className="flex flex-col items-center mb-6">
-        <h1 className="mt-4 text-3xl text-white text-center">
+        <h1 className="mt-4 text-4xl text-white text-center">
           KENYA NATIONAL WASTE PICKERS
         </h1>
-        <h2 className="text-xl text-white text-center">
+        <h2 className="text-3xl text-white text-center">
           WELFARE ASSOCIATION
         </h2>
         <p className="text-sm text-white text-center">
@@ -102,20 +102,22 @@ export default function LoginPage() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <Button
+            <div className="flex justify-center">
+              <Button
               type="submit"
               className="w-auto px-6 bg-[#003776] hover:bg-[#4e73df]"
               disabled={loading}
-            >
+              >
               {loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Signing in...
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Signing in...
                 </>
               ) : (
                 'Sign in'
               )}
-            </Button>
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
