@@ -14,9 +14,9 @@ export default function Header() {
   }
 
   return (
-    <header className="bg-white border-b px-6 py-4 lg:pl-72">
-      <div className="flex items-left justify-between w-full">
-        <div className="flex items-left gap-4">
+    <header className="bg-white border-b px-6 py-4 lg:pl-4">
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-4">
           <h1 className="text-sm font-bold text-[#003776]">
             KENYA NATIONAL WASTE PICKERS WELFARE ASSOCIATION INFORMATION MANAGEMENT SYSTEM
           </h1>
