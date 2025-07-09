@@ -45,19 +45,17 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-600">
       <div className="flex flex-col items-center mb-6">
+        <h1 className="mt-4 text-2xl font-bold text-white  text-center">
+          KENYA NATIONAL WASTE PICKERS WELFARE ASSOCIATION
+        </h1>
         <div className="w-36 h-36 bg-[#003776] rounded-full flex items-center justify-center">
           <img src="/logo.jpg" alt="KeNaWPWA Logo" className="w-30 h-30 rounded-full" />
         </div>
-        <h1 className="mt-4 text-2xl font-bold text-[#003776] text-center">
-          KENYA NATIONAL WASTE PICKERS WELFARE ASSOCIATION
-        </h1>
-        <p className="text-l text-gray-100 text-center">
-          KeNaWPWA Login
-        </p>
+        
       </div>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl font-bold text-[#003776]">Sign In</CardTitle>
+          <CardTitle className="text-xl font-bold text-[#003776]">Log In</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
