@@ -232,7 +232,7 @@ export default function Dashboard() {
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">New waste picker registered</p>
-                  <p className="text-xs text-gray-500">John joined from Nairobi County</p>
+                  <p className="text-xs text-gray-500"> joined from Nairobi County</p>
                 </div>
                 <span className="text-xs text-gray-500">2 hours ago</span>
               </div>
@@ -240,7 +240,7 @@ export default function Dashboard() {
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">Monthly contribution received</p>
-                  <p className="text-xs text-gray-500">KES 1,500 from Nakuru County</p>
+                  <p className="text-xs text-gray-500">KES 1,600 total recorded </p>
                 </div>
                 <span className="text-xs text-gray-500">4 hours ago</span>
               </div>
@@ -248,7 +248,7 @@ export default function Dashboard() {
                 <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">County manager updated</p>
-                  <p className="text-xs text-gray-500">Jane updated profile information</p>
+                  <p className="text-xs text-gray-500"> updated profile information</p>
                 </div>
                 <span className="text-xs text-gray-500">6 hours ago</span>
               </div>
