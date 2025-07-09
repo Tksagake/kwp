@@ -206,7 +206,7 @@ export default function Dashboard() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Contributions by County</CardTitle>
+              <CardTitle>Total Contributions</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
