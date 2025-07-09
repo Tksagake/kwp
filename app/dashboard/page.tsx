@@ -127,7 +127,7 @@ export default function Dashboard() {
         </div>
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="border-l-4 border-l-[#003776]">
+          <Card colorScheme="primary">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Waste Pickers</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
@@ -140,7 +140,7 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-l-4 border-l-[#4e73df]">
+          <Card colorScheme="secondary">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">County Managers</CardTitle>
               <UserCheck className="h-4 w-4 text-muted-foreground" />
@@ -153,7 +153,7 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-l-4 border-l-green-500">
+          <Card colorScheme="success">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Counties</CardTitle>
               <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -166,7 +166,7 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-l-4 border-l-orange-500">
+          <Card colorScheme="danger">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Contributions</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -232,7 +232,7 @@ export default function Dashboard() {
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">New waste picker registered</p>
-                  <p className="text-xs text-gray-500"> joined from Nairobi County</p>
+                  <p className="text-xs text-gray-500">joined from Nairobi County</p>
                 </div>
                 <span className="text-xs text-gray-500">2 hours ago</span>
               </div>
@@ -240,7 +240,7 @@ export default function Dashboard() {
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">Monthly contribution received</p>
-                  <p className="text-xs text-gray-500">KES 1,600 total recorded </p>
+                  <p className="text-xs text-gray-500">KES 1,600 total recorded</p>
                 </div>
                 <span className="text-xs text-gray-500">4 hours ago</span>
               </div>
@@ -248,7 +248,7 @@ export default function Dashboard() {
                 <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">County manager updated</p>
-                  <p className="text-xs text-gray-500"> updated profile information</p>
+                  <p className="text-xs text-gray-500">updated profile information</p>
                 </div>
                 <span className="text-xs text-gray-500">6 hours ago</span>
               </div>

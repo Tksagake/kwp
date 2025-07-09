@@ -1,20 +1,35 @@
 import * as React from 'react';
-
 import { cn } from '@/lib/utils';
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      'rounded-lg border bg-card text-card-foreground shadow-sm',
-      className
-    )}
-    {...props}
-  />
-));
+// Define types for the color schemes
+type CardColorScheme = 'default' | 'primary' | 'secondary' | 'success' | 'danger' | 'warning';
+
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  colorScheme?: CardColorScheme;
+}
+
+const colorSchemes = {
+  default: 'bg-card text-card-foreground border-border',
+  primary: 'bg-blue-500 text-white border-blue-600',
+  secondary: 'bg-gray-500 text-white border-gray-600',
+  success: 'bg-green-500 text-white border-green-600',
+  danger: 'bg-red-500 text-white border-red-600',
+  warning: 'bg-yellow-500 text-white border-yellow-600',
+};
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, colorScheme = 'default', ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        'rounded-lg border shadow-sm',
+        colorSchemes[colorScheme],
+        className
+      )}
+      {...props}
+    />
+  )
+);
 Card.displayName = 'Card';
 
 const CardHeader = React.forwardRef<
@@ -30,7 +45,7 @@ const CardHeader = React.forwardRef<
 CardHeader.displayName = 'CardHeader';
 
 const CardTitle = React.forwardRef<
-  HTMLParagraphElement,
+  HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
   <h3

@@ -457,8 +457,7 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
                     <TableHead>Registration ID</TableHead>
                     <TableHead>Contact</TableHead>
                     <TableHead>County</TableHead>
-                    <TableHead>ID Number</TableHead>
-                    <TableHead>Joined</TableHead>
+                    <TableHead>ID Number</TableHead>                
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -487,9 +486,7 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
                         <Badge variant="secondary">{picker.county}</Badge>
                       </TableCell>
                       <TableCell>{picker.id_number}</TableCell>
-                      <TableCell>
-                        {new Date(picker.created_at).toLocaleDateString()}
-                      </TableCell>
+                     
                       <TableCell>
                         <div className="flex gap-2">
                           <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
