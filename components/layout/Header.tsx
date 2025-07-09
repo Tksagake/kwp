@@ -18,10 +18,11 @@ export default function Header() {
       <div className="flex flex-col items-center justify-center gap-4">
         
         <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-4">
-             <h1 className="text-sm font-bold text-[#003776] text-left">
+          <h1 className="text-sm font-bold text-[#003776] text-left">
           KENYA NATIONAL WASTE PICKERS WELFARE ASSOCIATION MANAGEMENT SYSTEM
         </h1>
+          <div className="flex items-center gap-4">
+             
           </div>
           <div className="flex items-center gap-4">
            
