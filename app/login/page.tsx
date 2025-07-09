@@ -51,9 +51,9 @@ export default function LoginPage() {
               <img src="/logo.jpg" alt="KeNaWPWA Logo" className="w-30 h-30" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-[#003776]">KeNaWPWA Super Admin</CardTitle>
-          <CardDescription className="text-3xl text-gray-600">
-            KENYA NATIONAL WASTE PICKERS WELFARE ASSOCIATION
+          <CardTitle className="text-2xl font-bold text-[#003776]">KENYA NATIONAL WASTE PICKERS WELFARE ASSOCIATION</CardTitle>
+          <CardDescription className="text-l text-gray-600">
+            KeNaWPWA Login
           </CardDescription>
         </CardHeader>
         <CardContent>
