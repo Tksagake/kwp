@@ -25,7 +25,7 @@ export default function Header() {
           </div>
 
           <div className="flex items-center gap-4">
-            <h1 className="text-sm font-bold text-[#003776] text-center">
+            <h1 className="text-sm font-bold text-[#003776] text-left">
           KENYA NATIONAL WASTE PICKERS WELFARE ASSOCIATION MANAGEMENT SYSTEM
         </h1>
             <Button variant="ghost" size="sm">
