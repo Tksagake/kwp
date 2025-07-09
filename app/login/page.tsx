@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Shield, Loader2, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: { preventDefault: () => void }) => {
     e.preventDefault()
     setLoading(true)
     setError('')
@@ -45,13 +45,18 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-600">
       <div className="flex flex-col items-center mb-6">
-        <h1 className="mt-4 text-4xl font-bold text-white  text-center">
-          KENYA NATIONAL WASTE PICKERS <br/>WELFARE ASSOCIATION
+        <h1 className="mt-4 text-3xl text-white text-center">
+          KENYA NATIONAL WASTE PICKERS
         </h1>
-        <div className="w-36 h-36 bg-[#003776] rounded-full flex items-center justify-center">
+        <h2 className="text-xl text-white text-center">
+          WELFARE ASSOCIATION
+        </h2>
+        <p className="text-sm text-white text-center">
+          Information Management System
+        </p>
+        <div className="w-36 h-36 bg-[#003776] rounded-full flex items-center justify-center mt-4">
           <img src="/logo.jpg" alt="KeNaWPWA Logo" className="w-30 h-30 rounded-full" />
         </div>
-        
       </div>
       <Card className="w-full max-w-4xl">
         <CardHeader className="text-center">
@@ -99,7 +104,7 @@ export default function LoginPage() {
             )}
             <Button
               type="submit"
-              className="w-full bg-[#003776] hover:bg-[#4e73df]"
+              className="w-auto px-6 bg-[#003776] hover:bg-[#4e73df]"
               disabled={loading}
             >
               {loading ? (
@@ -114,6 +119,9 @@ export default function LoginPage() {
           </form>
         </CardContent>
       </Card>
+      <footer className="mt-8 text-white text-center">
+        <p>Copyright © KeNaWPWA 2025 powered by MaraTech</p>
+      </footer>
     </div>
   )
 }
