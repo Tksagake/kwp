@@ -123,7 +123,7 @@ export default function LoginPage() {
       </Card>
       <footer className="mt-8 text-white text-center">
         <p>
-          Copyright © KeNaWPWA {new Date().getFullYear()} powered by MaraTech Innovation Centre
+          Copyright © KeNaWPWA {new Date().getFullYear()} powered by MaraTech
         </p>
       </footer>
     </div>
