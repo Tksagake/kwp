@@ -520,9 +520,38 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
                               <Button onClick={handleUpdate}>Save Changes</Button>
                             </DialogContent>
                           </Dialog>
-                          <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleDelete(picker.id)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                            <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700"
+                              >
+                              <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                              <DialogTitle>Confirm Delete</DialogTitle>
+                              </DialogHeader>
+                              <div className="py-4">
+                              Are you sure you want to delete <span className="font-semibold">{picker.first_name} {picker.last_name}</span>? This action cannot be undone.
+                              </div>
+                              <div className="flex gap-2 justify-end">
+                              <DialogTrigger asChild>
+                                <Button variant="outline">Cancel</Button>
+                              </DialogTrigger>
+                              <DialogTrigger asChild>
+                                <Button
+                                variant="destructive"
+                                onClick={() => handleDelete(picker.id)}
+                                >
+                                Delete
+                                </Button>
+                              </DialogTrigger>
+                              </div>
+                            </DialogContent>
+                            </Dialog>
                         </div>
                       </TableCell>
                     </TableRow>

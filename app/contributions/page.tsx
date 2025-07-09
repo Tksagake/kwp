@@ -468,9 +468,7 @@ export default function Contributions() {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          <Button variant="ghost" size="sm">
-                            <Eye className="w-4 h-4" />
-                          </Button>
+                          
                           <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                             <DialogTrigger asChild>
                               <Button variant="ghost" size="sm" onClick={() => handleEdit(contribution)}>
@@ -511,9 +509,38 @@ export default function Contributions() {
                               <Button onClick={handleUpdate}>Save Changes</Button>
                             </DialogContent>
                           </Dialog>
-                          <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleDelete(contribution.id)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                         <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700"
+                              >
+                              <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                              <DialogTitle>Confirm Delete</DialogTitle>
+                              </DialogHeader>
+                              <div className="py-4">
+                              Are you sure you want to delete <span className="font-semibold">{ contribution.waste_pickers.first_name}'s Contribution? </span>? This action cannot be undone.
+                              </div>
+                              <div className="flex gap-2 justify-end">
+                              <DialogTrigger asChild>
+                                <Button variant="outline">Cancel</Button>
+                              </DialogTrigger>
+                              <DialogTrigger asChild>
+                                <Button
+                                variant="destructive"
+                                onClick={() => handleDelete(contribution.id)}
+                                >
+                                Delete
+                                </Button>
+                              </DialogTrigger>
+                              </div>
+                            </DialogContent>
+                            </Dialog>
                         </div>
                       </TableCell>
                     </TableRow>
