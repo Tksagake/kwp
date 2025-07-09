@@ -39,7 +39,7 @@ export default function Sidebar({ className }: SidebarProps) {
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
-      <div className="flex items-center bg-indigo-400 gap-2 p-6 border-b">
+      <div className="flex items-center bg-indigo-300 gap-2 p-6 border-b">
         <div className="w-8 h-8 flex items-center justify-center">
           <img src="/logo.jpg" alt="KeNaWPWA Logo" className="w-6 h-6" />
         </div>
@@ -49,7 +49,7 @@ export default function Sidebar({ className }: SidebarProps) {
         </div>
       </div>
 
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-4 bg-indigo-500 space-y-2">
         {navigation.map((item) => {
           const isActive = pathname === item.href
           const Icon = item.icon
