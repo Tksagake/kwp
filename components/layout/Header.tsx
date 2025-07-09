@@ -32,14 +32,16 @@ export default function Header() {
           </Button>
           <div className="flex items-center gap-2">
             <Badge variant="secondary">Online</Badge>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleLogout}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
+            <Button
+  variant="ghost"
+  size="sm"
+  onClick={handleLogout}
+  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+>
+  <LogOut className="w-4 h-4 mr-2" />
+  Log Out
+</Button>
+
           </div>
         </div>
       </div>
