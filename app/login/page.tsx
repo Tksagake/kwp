@@ -122,7 +122,9 @@ export default function LoginPage() {
         </CardContent>
       </Card>
       <footer className="mt-8 text-white text-center">
-        <p>Copyright © KeNaWPWA 2025 powered by MaraTech</p>
+        <p>
+          Copyright © KeNaWPWA {new Date().getFullYear()} powered by MaraTech Innovation Centre
+        </p>
       </footer>
     </div>
   )
