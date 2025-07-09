@@ -45,11 +45,11 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-[#003776] rounded-full flex items-center justify-center">
-              <Shield className="w-8 h-8 text-white" />
+            <div className="w-36 h-36 bg-[#003776] rounded-full flex items-center justify-center">
+             <img src="/logo.jpg" alt="KeNaWPWA Logo" className="w-30 h-30 " />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-[#003776]">KenWaPWA Admin</CardTitle>
+          <CardTitle className="text-2xl font-bold text-[#003776]">KeNaWPWA Admin</CardTitle>
           <CardDescription>
             Kenya National Waste Pickers Welfare Association
           </CardDescription>

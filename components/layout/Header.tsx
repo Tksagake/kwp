@@ -19,7 +19,7 @@ export default function Header() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="lg:hidden">
-            <h1 className="text-xl font-bold text-[#003776]">KenWaPWA Admin</h1>
+            <h1 className="text-xl font-bold text-[#003776]">KeNaWPWA Admin</h1>
           </div>
         </div>
         

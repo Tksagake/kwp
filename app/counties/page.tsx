@@ -1,5 +1,4 @@
 'use client'
-
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -7,17 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table'
-import { 
-  Search, 
-  Plus, 
+import {
+  Search,
+  Plus,
   Edit,
   Trash2,
   Eye,
@@ -25,6 +24,7 @@ import {
   Users,
   UserCheck
 } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 
 interface County {
   id: string
@@ -45,6 +45,10 @@ export default function Counties() {
   const [countyStats, setCountyStats] = useState<CountyStats>({})
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [newCounty, setNewCounty] = useState<Partial<County>>({})
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,26 +58,23 @@ export default function Counties() {
           .from('counties')
           .select('*')
           .order('name')
-
         if (countiesError) throw countiesError
 
         // Fetch waste pickers count by county
         const { data: wastePickers, error: pickersError } = await supabase
           .from('waste_pickers')
           .select('county')
-
         if (pickersError) throw pickersError
 
         // Fetch managers count by county
         const { data: managers, error: managersError } = await supabase
           .from('county_managers')
           .select('county')
-
         if (managersError) throw managersError
 
         // Calculate stats
         const stats: CountyStats = {}
-        
+
         // Count waste pickers by county
         wastePickers?.forEach(picker => {
           if (!stats[picker.county]) {
@@ -98,18 +99,69 @@ export default function Counties() {
         setLoading(false)
       }
     }
-
     fetchData()
   }, [])
 
   // Filter counties based on search term
   const filteredCounties = counties.filter(county => {
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch = searchTerm === '' ||
       county.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       county.code.toLowerCase().includes(searchTerm.toLowerCase())
-    
+
     return matchesSearch
   })
+
+  const handleCreate = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('counties')
+        .insert(newCounty)
+        .select()
+      if (error) throw error
+      setCounties([...counties, ...data])
+      setNewCounty({})
+      setIsAddModalOpen(false)
+    } catch (error) {
+      console.error('Error creating county:', error)
+    }
+  }
+
+  const handleUpdate = async () => {
+    if (!editingId) return
+    try {
+      const { data, error } = await supabase
+        .from('counties')
+        .update(newCounty)
+        .eq('id', editingId)
+        .select()
+      if (error) throw error
+      setCounties(counties.map(county => county.id === editingId ? data[0] : county))
+      setEditingId(null)
+      setNewCounty({})
+      setIsEditModalOpen(false)
+    } catch (error) {
+      console.error('Error updating county:', error)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('counties')
+        .delete()
+        .eq('id', id)
+      if (error) throw error
+      setCounties(counties.filter(county => county.id !== id))
+    } catch (error) {
+      console.error('Error deleting county:', error)
+    }
+  }
+
+  const handleEdit = (county: County) => {
+    setEditingId(county.id)
+    setNewCounty(county)
+    setIsEditModalOpen(true)
+  }
 
   if (loading) {
     return (
@@ -133,7 +185,6 @@ export default function Counties() {
             {counties.length} Counties
           </Badge>
         </div>
-
         {/* Controls */}
         <Card>
           <CardHeader>
@@ -153,16 +204,28 @@ export default function Counties() {
                 </div>
               </div>
             </div>
-
             <div className="flex flex-wrap gap-2">
-              <Button className="bg-[#003776] hover:bg-[#4e73df]">
-                <Plus className="w-4 h-4 mr-2" />
-                Add County
-              </Button>
+              <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-[#003776] hover:bg-[#4e73df]">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add County
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add New County</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <Input placeholder="Name" value={newCounty.name || ''} onChange={(e) => setNewCounty({...newCounty, name: e.target.value})} />
+                    <Input placeholder="Code" value={newCounty.code || ''} onChange={(e) => setNewCounty({...newCounty, code: e.target.value})} />
+                  </div>
+                  <Button onClick={handleCreate}>Save</Button>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardContent>
         </Card>
-
         {/* Table */}
         <Card>
           <CardContent>
@@ -182,7 +245,7 @@ export default function Counties() {
                 <TableBody>
                   {filteredCounties.map((county) => {
                     const stats = countyStats[county.name] || { wastePickers: 0, managers: 0 }
-                    
+
                     return (
                       <TableRow key={county.id}>
                         <TableCell>
@@ -215,11 +278,11 @@ export default function Counties() {
                           {new Date(county.created_at).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
-                          <Badge 
-                            variant="outline" 
+                          <Badge
+                            variant="outline"
                             className={
-                              stats.managers > 0 
-                                ? "text-green-600 border-green-600" 
+                              stats.managers > 0
+                                ? "text-green-600 border-green-600"
                                 : "text-orange-600 border-orange-600"
                             }
                           >
@@ -228,13 +291,25 @@ export default function Counties() {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button variant="ghost" size="sm">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                            
+                            <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                              <DialogTrigger asChild>
+                                <Button variant="ghost" size="sm" onClick={() => handleEdit(county)}>
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Edit County</DialogTitle>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                  <Input placeholder="Name" value={newCounty.name || ''} onChange={(e) => setNewCounty({...newCounty, name: e.target.value})} />
+                                  <Input placeholder="Code" value={newCounty.code || ''} onChange={(e) => setNewCounty({...newCounty, code: e.target.value})} />
+                                </div>
+                                <Button onClick={handleUpdate}>Save Changes</Button>
+                              </DialogContent>
+                            </Dialog>
+                            <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleDelete(county.id)}>
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>

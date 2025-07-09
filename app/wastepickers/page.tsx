@@ -1,6 +1,6 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -34,6 +34,9 @@ import {
   Users
 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import * as XLSX from 'xlsx';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface WastePicker {
   id: string
@@ -49,7 +52,6 @@ interface WastePicker {
 }
 
 export default function WastePickers() {
-  const supabase = createClientComponentClient()
   const [wastePickers, setWastePickers] = useState<WastePicker[]>([])
   const [counties, setCounties] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
@@ -60,12 +62,13 @@ export default function WastePickers() {
   const [newWastePicker, setNewWastePicker] = useState<Partial<WastePicker>>({})
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false)
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
-  const [csvFile, setCsvFile] = useState<File | null>(null)
-  const [message, setMessage] = useState('')
-  const [messageType, setMessageType] = useState<'success' | 'error' | ''>('')
-  const [county, setCounty] = useState('')
+  const [exportFormat, setExportFormat] = useState<string>('excel');
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<"success" | "error" | "">("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,20 +77,15 @@ export default function WastePickers() {
           .from('waste_pickers')
           .select('*')
           .order('created_at', { ascending: false })
-
         if (pickersError) throw pickersError
-
         const { data: countiesData, error: countiesError } = await supabase
           .from('counties')
           .select('name')
           .order('name')
-
         if (countiesError) throw countiesError
-
         const validCounties = countiesData
-          ?.map((c: { name: any }) => c.name)
-          ?.filter((county: string) => county && county.trim() !== '')
-
+          ?.map(c => c.name)
+          ?.filter(county => county && county.trim() !== '')
         setWastePickers(pickersData || [])
         setCounties(validCounties || [])
       } catch (error) {
@@ -96,7 +94,6 @@ export default function WastePickers() {
         setLoading(false)
       }
     }
-
     fetchData()
   }, [])
 
@@ -106,7 +103,6 @@ export default function WastePickers() {
       picker.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       picker.reg_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       picker.email.toLowerCase().includes(searchTerm.toLowerCase())
-
     const matchesCounty = selectedCounty === '' || picker.county === selectedCounty
     return matchesSearch && matchesCounty
   })
@@ -116,9 +112,120 @@ export default function WastePickers() {
   const endIndex = startIndex + itemsPerPage
   const currentWastePickers = filteredWastePickers.slice(startIndex, endIndex)
 
-  const handleExport = () => {
-    console.log('Export waste pickers data')
-  }
+  const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setCsvFile(event.target.files[0]);
+    }
+  };
+
+  const processCsv = async () => {
+    if (!csvFile) {
+      showMessage("Please upload a CSV file.", "error");
+      return;
+    }
+    setLoading(true);
+    setMessage("");
+    const reader = new FileReader();
+    reader.readAsText(csvFile);
+    reader.onload = async (e) => {
+      const text = e.target?.result as string;
+      if (!text) return;
+      const rows = text.split("\n").slice(1);
+      const wastePickers = rows.map((row: string) => {
+        const cols = row.split(",");
+        if (cols.length < 7) return null;
+        return {
+          first_name: cols[0].trim(),
+          last_name: cols[1].trim(),
+          reg_id: cols[2].trim(),
+          mobile_number: cols[3].trim(),
+          email: cols[4].trim(),
+          county: cols[5].trim(),
+          id_number: cols[6].trim(),
+        };
+      }).filter(Boolean);
+
+      if (wastePickers.length === 0) {
+        showMessage("No valid waste pickers found in the CSV.", "error");
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await supabase.from("waste_pickers").insert(wastePickers);
+      if (error) {
+        showMessage(`Error inserting waste pickers: ${error.message}`, "error");
+      } else {
+        showMessage("Waste pickers imported successfully!", "success");
+        setIsBulkImportModalOpen(false);
+        const { data: updatedPickers, error: fetchError } = await supabase
+          .from('waste_pickers')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (!fetchError && updatedPickers) {
+          setWastePickers(updatedPickers);
+        }
+      }
+      setLoading(false);
+    };
+  };
+
+  const showMessage = (msg: string, type: "success" | "error") => {
+    setMessage(msg);
+    setMessageType(type);
+    setTimeout(() => {
+      setMessage("");
+      setMessageType("");
+    }, 5000);
+  };
+
+  const downloadSampleCsv = () => {
+    const sampleCsvContent = `First Name,Last Name,Registration ID,Mobile Number,Email,County,ID Number
+John,Doe,REG001,1234567890,john.doe@example.com,CountyA,ID123456
+Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
+    const blob = new Blob([sampleCsvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sample_waste_pickers.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExport = (format: string) => {
+    const dataToExport = filteredWastePickers.map(picker => ({
+      'First Name': picker.first_name,
+      'Last Name': picker.last_name,
+      'Registration ID': picker.reg_id,
+      'Mobile Number': picker.mobile_number,
+      'Email': picker.email,
+      'County': picker.county,
+      'ID Number': picker.id_number,
+      'Joined': new Date(picker.created_at).toLocaleDateString()
+    }));
+
+    if (format === 'excel') {
+      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Waste Pickers");
+      XLSX.writeFile(workbook, "WastePickers.xlsx");
+    } else if (format === 'pdf') {
+      const doc = new jsPDF();
+      autoTable(doc, {
+        head: [['First Name', 'Last Name', 'Registration ID', 'Mobile Number', 'Email', 'County', 'ID Number', 'Joined']],
+        body: dataToExport.map(picker => [
+          picker['First Name'],
+          picker['Last Name'],
+          picker['Registration ID'],
+          picker['Mobile Number'],
+          picker['Email'],
+          picker['County'],
+          picker['ID Number'],
+          picker['Joined']
+        ])
+      });
+      doc.save("WastePickers.pdf");
+    }
+  };
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
@@ -130,9 +237,7 @@ export default function WastePickers() {
         .from('waste_pickers')
         .insert(newWastePicker)
         .select()
-
       if (error) throw error
-
       setWastePickers([...wastePickers, ...data])
       setNewWastePicker({})
       setIsAddModalOpen(false)
@@ -141,19 +246,19 @@ export default function WastePickers() {
     }
   }
 
-  const handleUpdate = async (id: string) => {
+  const handleUpdate = async () => {
+    if (!editingId) return;
     try {
       const { data, error } = await supabase
         .from('waste_pickers')
         .update(newWastePicker)
-        .eq('id', id)
+        .eq('id', editingId)
         .select()
-
       if (error) throw error
-
-      setWastePickers(wastePickers.map(picker => picker.id === id ? data[0] : picker))
+      setWastePickers(wastePickers.map(picker => picker.id === editingId ? data[0] : picker))
       setEditingId(null)
       setNewWastePicker({})
+      setIsEditModalOpen(false)
     } catch (error) {
       console.error('Error updating waste picker:', error)
     }
@@ -165,9 +270,7 @@ export default function WastePickers() {
         .from('waste_pickers')
         .delete()
         .eq('id', id)
-
       if (error) throw error
-
       setWastePickers(wastePickers.filter(picker => picker.id !== id))
     } catch (error) {
       console.error('Error deleting waste picker:', error)
@@ -177,86 +280,7 @@ export default function WastePickers() {
   const handleEdit = (picker: WastePicker) => {
     setEditingId(picker.id)
     setNewWastePicker(picker)
-  }
-
-  const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setCsvFile(event.target.files[0])
-    }
-  }
-
-  const processCsv = async () => {
-    if (!csvFile) {
-      showMessage('Please upload a CSV file.', 'error')
-      return
-    }
-    if (!county) {
-      showMessage('County field is required.', 'error')
-      return
-    }
-    setLoading(true)
-    setMessage('')
-    const reader = new FileReader()
-    reader.readAsText(csvFile)
-    reader.onload = async (e) => {
-      const text = e.target?.result as string
-      if (!text) return
-      const rows = text.split('\n').slice(1) // Skip header row
-      const wastePickers = rows
-        .map((row: string) => {
-          const cols = row.split(',')
-          if (cols.length < 6) return null // Skip invalid rows
-          return {
-            first_name: cols[0].trim(),
-            last_name: cols[1].trim(),
-            reg_id: cols[2].trim(),
-            mobile_number: cols[3].trim(),
-            email: cols[4]?.trim() || null,
-            id_number: cols[5]?.trim() || null,
-            county: county,
-            created_at: new Date().toISOString().split('T')[0],
-          }
-        })
-        .filter(Boolean) // Remove null values
-
-      if (wastePickers.length === 0) {
-        showMessage('No valid waste pickers found in the CSV.', 'error')
-        setLoading(false)
-        return
-      }
-
-      // Insert into Supabase
-      const { error } = await supabase.from('waste_pickers').insert(wastePickers)
-      if (error) {
-        showMessage(`Error inserting waste pickers: ${error.message}`, 'error')
-      } else {
-        showMessage('Waste pickers imported successfully!', 'success')
-        setIsBulkImportModalOpen(false)
-      }
-      setLoading(false)
-    }
-  }
-
-  const showMessage = (msg: string, type: 'success' | 'error') => {
-    setMessage(msg)
-    setMessageType(type)
-    setTimeout(() => {
-      setMessage('')
-      setMessageType('')
-    }, 5000)
-  }
-
-  const downloadSampleCsv = () => {
-    const sampleCsvContent = `First Name,Last Name,Registration ID,Mobile Number,Email,ID Number
-John,Doe,REG001,1234567890,john.doe@example.com,ID123
-Jane,Smith,REG002,0987654321,jane.smith@example.com,ID456`
-    const blob = new Blob([sampleCsvContent], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'sample_waste_pickers.csv'
-    a.click()
-    URL.revokeObjectURL(url)
+    setIsEditModalOpen(true)
   }
 
   if (loading) {
@@ -281,13 +305,6 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,ID456`
             {wastePickers.length} Total Members
           </Badge>
         </div>
-
-        {message && (
-          <div className={`p-3 mb-4 rounded-md text-white ${messageType === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
-            {message}
-          </div>
-        )}
-
         <Card>
           <CardHeader>
             <CardTitle>Manage Waste Pickers</CardTitle>
@@ -357,7 +374,6 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,ID456`
                   <Button onClick={handleCreate}>Save</Button>
                 </DialogContent>
               </Dialog>
-
               <Dialog open={isBulkImportModalOpen} onOpenChange={setIsBulkImportModalOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline">
@@ -377,46 +393,30 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,ID456`
                         <li>Last Name</li>
                         <li>Registration ID</li>
                         <li>Mobile Number</li>
-                        <li>Email (Optional)</li>
-                        <li>ID Number (Optional)</li>
+                        <li>Email</li>
+                        <li>County</li>
+                        <li>ID Number</li>
                       </ul>
-                      <p>2. Fill out the form below to apply to all rows in the CSV.</p>
-                      <button
-                        onClick={downloadSampleCsv}
-                        className="mt-2 bg-blue-600 text-white px-4 py-2 rounded-md"
-                      >
-                        Download Sample CSV
-                      </button>
+                      <p>2. Download the sample CSV template to see the correct format.</p>
+                      <Button onClick={downloadSampleCsv} variant="outline">
+                        Download Sample CSV Template
+                      </Button>
                     </div>
-                    <input
-                      type="file"
-                      accept=".csv"
-                      onChange={handleCsvUpload}
-                      className="border p-2 rounded-md w-full mb-4"
-                    />
-                    <Select value={county} onValueChange={setCounty}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select County" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {counties.map(county => (
-                          <SelectItem key={county} value={county}>{county}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex justify-end space-x-4">
-                    <Button onClick={() => setIsBulkImportModalOpen(false)}>Cancel</Button>
+                    <input type="file" accept=".csv" onChange={handleCsvUpload} className="border p-2 rounded-md w-full mb-4" />
                     <Button onClick={processCsv} disabled={loading}>
-                      {loading ? 'Uploading...' : 'Upload'}
+                      {loading ? "Uploading..." : "Upload"}
                     </Button>
+                    {message && (
+                      <div className={`p-3 rounded-md text-white ${messageType === "success" ? "bg-green-600" : "bg-red-600"}`}>
+                        {message}
+                      </div>
+                    )}
                   </div>
                 </DialogContent>
               </Dialog>
-
               <Dialog open={isExportModalOpen} onOpenChange={setIsExportModalOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" onClick={handleExport}>
+                  <Button variant="outline">
                     <Download className="w-4 h-4 mr-2" />
                     Export
                   </Button>
@@ -426,14 +426,22 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,ID456`
                     <DialogTitle>Export Waste Pickers</DialogTitle>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
-                    <p>Export functionality will be implemented here.</p>
+                    <Select onValueChange={(value) => setExportFormat(value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select export format" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="excel">Excel</SelectItem>
+                        <SelectItem value="pdf">PDF</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={() => handleExport(exportFormat)}>Export</Button>
                   </div>
                 </DialogContent>
               </Dialog>
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent>
             <div className="rounded-md border">
@@ -479,9 +487,37 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,ID456`
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(picker)}>
-                            <Edit className="w-4 h-4" />
-                          </Button>
+                          <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                            <DialogTrigger asChild>
+                              <Button variant="ghost" size="sm" onClick={() => handleEdit(picker)}>
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Edit Waste Picker</DialogTitle>
+                              </DialogHeader>
+                              <div className="grid gap-4 py-4">
+                                <Input placeholder="First Name" value={newWastePicker.first_name || ''} onChange={(e) => setNewWastePicker({...newWastePicker, first_name: e.target.value})} />
+                                <Input placeholder="Last Name" value={newWastePicker.last_name || ''} onChange={(e) => setNewWastePicker({...newWastePicker, last_name: e.target.value})} />
+                                <Input placeholder="Registration ID" value={newWastePicker.reg_id || ''} onChange={(e) => setNewWastePicker({...newWastePicker, reg_id: e.target.value})} />
+                                <Input placeholder="Mobile Number" value={newWastePicker.mobile_number || ''} onChange={(e) => setNewWastePicker({...newWastePicker, mobile_number: e.target.value})} />
+                                <Input placeholder="Email" value={newWastePicker.email || ''} onChange={(e) => setNewWastePicker({...newWastePicker, email: e.target.value})} />
+                                <Input placeholder="ID Number" value={newWastePicker.id_number || ''} onChange={(e) => setNewWastePicker({...newWastePicker, id_number: e.target.value})} />
+                                <Select value={newWastePicker.county || ''} onValueChange={(value) => setNewWastePicker({...newWastePicker, county: value})}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select County" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {counties.map(county => (
+                                      <SelectItem key={county} value={county}>{county}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <Button onClick={handleUpdate}>Save Changes</Button>
+                            </DialogContent>
+                          </Dialog>
                           <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleDelete(picker.id)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>

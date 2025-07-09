@@ -40,11 +40,11 @@ export default function Sidebar({ className }: SidebarProps) {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-2 p-6 border-b">
-        <div className="w-8 h-8 bg-[#003776] rounded-lg flex items-center justify-center">
-          <Shield className="w-5 h-5 text-white" />
+        <div className="w-8 h-8 flex items-center justify-center">
+          <img src="/logo.jpg" alt="KeNaWPWA Logo" className="w-6 h-6" />
         </div>
         <div className="flex flex-col">
-          <span className="font-bold text-[#003776]">KenWaPWA</span>
+          <span className="font-bold text-[#003776]">KeNaWPWA</span>
           <span className="text-xs text-gray-500">Admin Dashboard</span>
         </div>
       </div>
@@ -75,15 +75,15 @@ export default function Sidebar({ className }: SidebarProps) {
       <div className="p-4 border-t">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-            <span className="text-green-600 font-semibold text-xs">A</span>
+            <span className="text-green-600 font-bold text-xs">A</span>
           </div>
           <div className="flex-1 text-sm">
-            <p className="font-medium text-gray-900">Admin User</p>
-            <p className="text-gray-500">admin@kenwapwa.org</p>
+            <p className="font-medium text-gray-900">Admin</p>
+            
           </div>
         </div>
         <Badge variant="outline" className="text-xs">
-          Super Admin
+          Admin
         </Badge>
       </div>
     </div>

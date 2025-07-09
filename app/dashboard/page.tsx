@@ -1,5 +1,4 @@
 'use client'
-
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -8,18 +7,25 @@ import { Badge } from '@/components/ui/badge'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { Users, UserCheck, MapPin, DollarSign, TrendingUp, TrendingDown, Activity } from 'lucide-react'
 
+interface Contribution {
+  amount: number;
+  waste_pickers: {
+    county: string;
+  }[];
+}
+
 interface DashboardStats {
-  totalWastePickers: number
-  totalCounties: number
-  totalManagers: number
-  totalContributions: number
-  monthlyTrend: Array<{ month: string; registrations: number }>
-  contributionsByCounty: Array<{ county: string; amount: number }>
+  totalWastePickers: number;
+  totalCounties: number;
+  totalManagers: number;
+  totalContributions: number;
+  monthlyTrend: Array<{ month: string; registrations: number }>;
+  contributionsByCounty: Array<{ county: string; amount: number }>;
 }
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -27,34 +33,34 @@ export default function Dashboard() {
         // Fetch total waste pickers
         const { count: wastePickers } = await supabase
           .from('waste_pickers')
-          .select('*', { count: 'exact', head: true })
+          .select('*', { count: 'exact', head: true });
 
         // Fetch total counties
         const { count: counties } = await supabase
           .from('counties')
-          .select('*', { count: 'exact', head: true })
+          .select('*', { count: 'exact', head: true });
 
         // Fetch total managers
         const { count: managers } = await supabase
           .from('county_managers')
-          .select('*', { count: 'exact', head: true })
+          .select('*', { count: 'exact', head: true });
 
         // Fetch total contributions
         const { data: contributions } = await supabase
           .from('contributions')
-          .select('amount')
+          .select('amount');
 
-        const totalContributions = contributions?.reduce((sum, c) => sum + Number(c.amount), 0) || 0
+        const totalContributions = contributions?.reduce((sum, c) => sum + Number(c.amount), 0) || 0;
 
         // Fetch monthly registration trend (mock data for now)
         const monthlyTrend = [
-          { month: 'Jan', registrations: 45 },
-          { month: 'Feb', registrations: 52 },
+          { month: 'Jan', registrations: 25 },
+          { month: 'Feb', registrations: 32 },
           { month: 'Mar', registrations: 48 },
           { month: 'Apr', registrations: 61 },
           { month: 'May', registrations: 55 },
-          { month: 'Jun', registrations: 67 },
-        ]
+          { month: 'Jun', registrations: 47 },
+        ];
 
         // Fetch contributions by county
         const { data: contributionsByCounty } = await supabase
@@ -62,21 +68,24 @@ export default function Dashboard() {
           .select(`
             amount,
             waste_pickers!inner(county)
-          `)
+          `);
 
-        const countyContributions = contributionsByCounty?.reduce((acc, item) => {
-          const county = item.waste_pickers.county
+        const countyContributions = contributionsByCounty?.reduce((acc: Record<string, number>, item: Contribution) => {
+          // waste_pickers is now an array, so use the first element if available
+          const county = item.waste_pickers && item.waste_pickers.length > 0
+            ? item.waste_pickers[0].county
+            : 'Unknown County';
           if (!acc[county]) {
-            acc[county] = 0
+            acc[county] = 0;
           }
-          acc[county] += Number(item.amount)
-          return acc
-        }, {} as Record<string, number>) || {}
+          acc[county] += Number(item.amount);
+          return acc;
+        }, {} as Record<string, number>) || {};
 
         const contributionsByCountyArray = Object.entries(countyContributions)
           .map(([county, amount]) => ({ county, amount }))
           .sort((a, b) => b.amount - a.amount)
-          .slice(0, 5)
+          .slice(0, 5);
 
         setStats({
           totalWastePickers: wastePickers || 0,
@@ -85,16 +94,16 @@ export default function Dashboard() {
           totalContributions,
           monthlyTrend,
           contributionsByCounty: contributionsByCountyArray,
-        })
+        });
       } catch (error) {
-        console.error('Error fetching stats:', error)
+        console.error('Error fetching stats:', error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchStats()
-  }, [])
+    fetchStats();
+  }, []);
 
   if (loading) {
     return (
@@ -103,7 +112,7 @@ export default function Dashboard() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#003776]"></div>
         </div>
       </DashboardLayout>
-    )
+    );
   }
 
   return (
@@ -116,7 +125,6 @@ export default function Dashboard() {
             System Active
           </Badge>
         </div>
-
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="border-l-4 border-l-[#003776]">
@@ -132,7 +140,6 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-
           <Card className="border-l-4 border-l-[#4e73df]">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">County Managers</CardTitle>
@@ -146,7 +153,6 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-
           <Card className="border-l-4 border-l-green-500">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Counties</CardTitle>
@@ -160,7 +166,6 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-
           <Card className="border-l-4 border-l-orange-500">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Contributions</CardTitle>
@@ -175,7 +180,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
-
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
@@ -189,10 +193,10 @@ export default function Dashboard() {
                   <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="registrations" 
-                    stroke="#003776" 
+                  <Line
+                    type="monotone"
+                    dataKey="registrations"
+                    stroke="#003776"
                     strokeWidth={2}
                     dot={{ fill: '#003776' }}
                   />
@@ -200,7 +204,6 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
               <CardTitle>Contributions by County</CardTitle>
@@ -218,7 +221,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
-
         {/* Recent Activity */}
         <Card>
           <CardHeader>
@@ -230,7 +232,7 @@ export default function Dashboard() {
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">New waste picker registered</p>
-                  <p className="text-xs text-gray-500">John Doe joined from Nairobi County</p>
+                  <p className="text-xs text-gray-500">John joined from Nairobi County</p>
                 </div>
                 <span className="text-xs text-gray-500">2 hours ago</span>
               </div>
@@ -246,7 +248,7 @@ export default function Dashboard() {
                 <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">County manager updated</p>
-                  <p className="text-xs text-gray-500">Alice Chepkemoi updated profile information</p>
+                  <p className="text-xs text-gray-500">Jane updated profile information</p>
                 </div>
                 <span className="text-xs text-gray-500">6 hours ago</span>
               </div>
@@ -255,5 +257,5 @@ export default function Dashboard() {
         </Card>
       </div>
     </DashboardLayout>
-  )
+  );
 }

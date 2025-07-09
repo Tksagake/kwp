@@ -52,6 +52,8 @@
     "eslint": "8.49.0",
     "eslint-config-next": "13.5.1",
     "input-otp": "^1.2.4",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.446.0",
     "next": "13.5.1",
     "next-themes": "^0.3.0",
@@ -68,6 +70,12 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "5.2.2",
     "vaul": "^0.9.9",
+    "xlsx": "^0.18.5",
     "zod": "^3.23.8"
-  }
+  },
+  "optionalDependencies": {
+  "bufferutil": "latest",
+  "utf-8-validate": "latest"
+}
+
 }
