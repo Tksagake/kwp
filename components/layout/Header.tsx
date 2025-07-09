@@ -16,9 +16,7 @@ export default function Header() {
   return (
     <header className="bg-white border-b px-6 py-4 lg:pl-72">
       <div className="flex flex-col items-center justify-center gap-4">
-        <h1 className="text-sm font-bold text-[#003776] text-center">
-          KENYA NATIONAL WASTE PICKERS WELFARE ASSOCIATION MANAGEMENT SYSTEM
-        </h1>
+        
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-4">
             <div className="lg:hidden">
@@ -27,6 +25,9 @@ export default function Header() {
           </div>
 
           <div className="flex items-center gap-4">
+            <h1 className="text-sm font-bold text-[#003776] text-center">
+          KENYA NATIONAL WASTE PICKERS WELFARE ASSOCIATION MANAGEMENT SYSTEM
+        </h1>
             <Button variant="ghost" size="sm">
               <Bell className="w-4 h-4" />
             </Button>
