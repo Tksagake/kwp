@@ -1,5 +1,4 @@
 'use client'
-
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -7,15 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table'
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -23,9 +22,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { 
-  Search, 
-  Filter, 
+import {
+  Search,
+  Filter,
   Download,
   Eye,
   CreditCard,
@@ -96,18 +95,8 @@ export default function Membership() {
           const contributionCount = memberContributions.length
           const lastContribution = memberContributions[0]?.date
 
-          // Determine status based on contribution activity
-          let status: 'Active' | 'Inactive' | 'Delinquent' = 'Active'
-          if (contributionCount === 0) {
-            status = 'Inactive'
-          } else if (lastContribution) {
-            const daysSinceLastContribution = Math.floor(
-              (new Date().getTime() - new Date(lastContribution).getTime()) / (1000 * 60 * 60 * 24)
-            )
-            if (daysSinceLastContribution > 60) {
-              status = 'Delinquent'
-            }
-          }
+          // Set status to Active regardless of contribution activity
+          const status: 'Active' | 'Inactive' | 'Delinquent' = 'Active'
 
           return {
             ...picker,
@@ -132,15 +121,15 @@ export default function Membership() {
 
   // Filter members based on search term, county, and status
   const filteredMembers = members.filter(member => {
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch = searchTerm === '' ||
       member.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.reg_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.email.toLowerCase().includes(searchTerm.toLowerCase())
-    
+
     const matchesCounty = selectedCounty === '' || member.county === selectedCounty
     const matchesStatus = selectedStatus === '' || member.status === selectedStatus
-    
+
     return matchesSearch && matchesCounty && matchesStatus
   })
 
@@ -212,7 +201,6 @@ export default function Membership() {
             {members.length} Total Members
           </Badge>
         </div>
-
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card className="border-l-4 border-l-green-500">
@@ -227,7 +215,6 @@ export default function Membership() {
               </div>
             </CardContent>
           </Card>
-
           <Card className="border-l-4 border-l-gray-500">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Inactive Members</CardTitle>
@@ -240,7 +227,6 @@ export default function Membership() {
               </div>
             </CardContent>
           </Card>
-
           <Card className="border-l-4 border-l-red-500">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Delinquent Members</CardTitle>
@@ -253,7 +239,6 @@ export default function Membership() {
               </div>
             </CardContent>
           </Card>
-
           <Card className="border-l-4 border-l-[#003776]">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Collections</CardTitle>
@@ -267,7 +252,6 @@ export default function Membership() {
             </CardContent>
           </Card>
         </div>
-
         {/* Controls */}
         <Card>
           <CardHeader>
@@ -317,7 +301,6 @@ export default function Membership() {
                 </Button>
               </div>
             </div>
-
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" onClick={handleExport}>
                 <Download className="w-4 h-4 mr-2" />
@@ -326,7 +309,6 @@ export default function Membership() {
             </div>
           </CardContent>
         </Card>
-
         {/* Table */}
         <Card>
           <CardContent>
@@ -403,7 +385,6 @@ export default function Membership() {
                 </TableBody>
               </Table>
             </div>
-
             {/* Pagination */}
             <div className="flex items-center justify-between px-4 py-4">
               <div className="text-sm text-gray-500">
