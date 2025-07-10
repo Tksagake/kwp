@@ -220,23 +220,32 @@ export default function Counties() {
             </div>
             <div className="flex flex-wrap gap-2">
               <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-[#003776] hover:bg-[#4e73df]">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add County
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add New County</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <Input placeholder="Name" value={newCounty.name || ''} onChange={(e) => setNewCounty({...newCounty, name: e.target.value})} />
-                    <Input placeholder="Code" value={newCounty.code || ''} onChange={(e) => setNewCounty({...newCounty, code: e.target.value})} />
-                  </div>
-                  <Button onClick={handleCreate}>Save</Button>
-                </DialogContent>
-              </Dialog>
+  <DialogTrigger asChild>
+    <Button
+      className="bg-[#003776] hover:bg-[#4e73df]"
+      disabled={counties.length >= 47} // Disable the button if there are 47 or more counties
+      onClick={() => {
+        if (counties.length >= 47) {
+          alert("47 counties already added");
+        }
+      }}
+    >
+      <Plus className="w-4 h-4 mr-2" />
+      Add County
+    </Button>
+  </DialogTrigger>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Add New County</DialogTitle>
+    </DialogHeader>
+    <div className="grid gap-4 py-4">
+      <Input placeholder="Name" value={newCounty.name || ''} onChange={(e) => setNewCounty({...newCounty, name: e.target.value})} />
+      <Input placeholder="Code" value={newCounty.code || ''} onChange={(e) => setNewCounty({...newCounty, code: e.target.value})} />
+    </div>
+    <Button onClick={handleCreate}>Save</Button>
+  </DialogContent>
+</Dialog>
+
             </div>
           </CardContent>
         </Card>
