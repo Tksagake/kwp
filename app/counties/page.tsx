@@ -25,6 +25,13 @@ import {
   UserCheck
 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface County {
   id: string
@@ -49,6 +56,8 @@ export default function Counties() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,6 +108,7 @@ export default function Counties() {
         setLoading(false)
       }
     }
+
     fetchData()
   }, [])
 
@@ -107,9 +117,13 @@ export default function Counties() {
     const matchesSearch = searchTerm === '' ||
       county.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       county.code.toLowerCase().includes(searchTerm.toLowerCase())
-
     return matchesSearch
   })
+
+  const totalPages = Math.ceil(filteredCounties.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentCounties = filteredCounties.slice(startIndex, endIndex)
 
   const handleCreate = async () => {
     try {
@@ -243,9 +257,8 @@ export default function Counties() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredCounties.map((county) => {
+                  {currentCounties.map((county) => {
                     const stats = countyStats[county.name] || { wastePickers: 0, managers: 0 }
-
                     return (
                       <TableRow key={county.id}>
                         <TableCell>
@@ -291,7 +304,6 @@ export default function Counties() {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            
                             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                               <DialogTrigger asChild>
                                 <Button variant="ghost" size="sm" onClick={() => handleEdit(county)}>
@@ -309,37 +321,37 @@ export default function Counties() {
                                 <Button onClick={handleUpdate}>Save Changes</Button>
                               </DialogContent>
                             </Dialog>
-                           <Dialog>
-                            <DialogTrigger asChild>
-                              <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-red-600 hover:text-red-700"
-                              >
-                              <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                              <DialogTitle>Confirm Delete</DialogTitle>
-                              </DialogHeader>
-                              <div className="py-4">
-                              Are you sure you want to delete <span className="font-semibold">{county.name}</span>? This action cannot be undone.
-                              </div>
-                              <div className="flex gap-2 justify-end">
-                              <DialogTrigger asChild>
-                                <Button variant="outline">Cancel</Button>
-                              </DialogTrigger>
+                            <Dialog>
                               <DialogTrigger asChild>
                                 <Button
-                                variant="destructive"
-                                onClick={() => handleDelete(county.id)}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-red-600 hover:text-red-700"
                                 >
-                                Delete
+                                  <Trash2 className="w-4 h-4" />
                                 </Button>
                               </DialogTrigger>
-                              </div>
-                            </DialogContent>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Confirm Delete</DialogTitle>
+                                </DialogHeader>
+                                <div className="py-4">
+                                  Are you sure you want to delete <span className="font-semibold">{county.name}</span>? This action cannot be undone.
+                                </div>
+                                <div className="flex gap-2 justify-end">
+                                  <DialogTrigger asChild>
+                                    <Button variant="outline">Cancel</Button>
+                                  </DialogTrigger>
+                                  <DialogTrigger asChild>
+                                    <Button
+                                      variant="destructive"
+                                      onClick={() => handleDelete(county.id)}
+                                    >
+                                      Delete
+                                    </Button>
+                                  </DialogTrigger>
+                                </div>
+                              </DialogContent>
                             </Dialog>
                           </div>
                         </TableCell>
@@ -348,6 +360,61 @@ export default function Counties() {
                   })}
                 </TableBody>
               </Table>
+            </div>
+            <div className="flex items-center justify-between px-4 py-4">
+              <div className="flex items-center gap-4">
+                <div className="text-sm text-gray-500">
+                  Showing {startIndex + 1} to {Math.min(endIndex, filteredCounties.length)} of {filteredCounties.length} entries
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">Entries per page:</span>
+                  <Select value={itemsPerPage.toString()} onValueChange={(value) => {
+                    setItemsPerPage(Number(value))
+                    setCurrentPage(1)
+                  }}>
+                    <SelectTrigger className="w-20">
+                      <SelectValue placeholder="10" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                      className={currentPage === page ? "bg-[#003776] hover:bg-[#4e73df]" : ""}
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
