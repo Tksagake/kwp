@@ -31,6 +31,7 @@ const navigation = [
   { name: 'Contributions', href: '/contributions', icon: DollarSign },
   { name: 'Membership', href: '/membership', icon: CreditCard },
   { name: 'Notifications', href: '/notifications', icon: Bell },
+  { name: 'Add Admin User', href: '/registrar', icon: Bell },
 ]
 
 export default function Sidebar({ className }: SidebarProps) {
