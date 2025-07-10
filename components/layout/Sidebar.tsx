@@ -1,23 +1,24 @@
 'use client'
-
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  LayoutDashboard, 
-  Users, 
-  MapPin, 
-  UserCheck, 
-  DollarSign, 
-  CreditCard, 
-  Bell, 
+import { supabase } from '@/lib/supabase' 
+import {
+  LayoutDashboard,
+  Users,
+  MapPin,
+  UserCheck,
+  DollarSign,
+  CreditCard,
+  Bell,
   Shield,
   Menu,
   X,
-  User
+  User,
+  Mail
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -37,7 +38,25 @@ const navigation = [
 
 export default function Sidebar({ className }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [userEmail, setUserEmail] = useState('')
+
   const pathname = usePathname()
+
+  useEffect(() => {
+    const fetchUserEmail = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (user) {
+        setUserEmail(user.email || '')
+      }
+    }
+
+    fetchUserEmail()
+  }, [])
+
+  const getEmailPrefix = (email: string) => {
+    return email.split('@')[0]
+  }
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -50,12 +69,11 @@ export default function Sidebar({ className }: SidebarProps) {
           <span className="text-xs text-gray-500">Admin Dashboard</span>
         </div>
       </div>
-
       <nav className="flex-1 p-4 bg-indigo-400 space-y-2">
         {navigation.map((item) => {
           const isActive = pathname === item.href
           const Icon = item.icon
-          
+
           return (
             <Link
               key={item.name}
@@ -73,15 +91,14 @@ export default function Sidebar({ className }: SidebarProps) {
           )
         })}
       </nav>
-
       <div className="p-4 border-t bg-indigo-400">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-            <span className="text-green-600 font-bold text-xs">A</span>
+            <Mail className="text-green-600 w-4 h-4" />
           </div>
           <div className="flex-1 text-sm">
-            <p className="font-medium text-gray-900">Admin</p>
-            
+            <p className="font-medium text-gray-900">Admin {getEmailPrefix(userEmail)}</p>
+            <p className="font-medium text-gray-700">{userEmail}</p>
           </div>
         </div>
         <Badge variant="outline" className="text-xs">
