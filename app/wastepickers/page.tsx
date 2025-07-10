@@ -65,12 +65,20 @@ export default function WastePickers() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false)
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
-  const [exportFormat, setExportFormat] = useState<string>('excel');
-  const [csvFile, setCsvFile] = useState<File | null>(null);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState<"success" | "error" | "">("");
+  const [exportFormat, setExportFormat] = useState<string>('excel')
+  const [csvFile, setCsvFile] = useState<File | null>(null)
+  const [message, setMessage] = useState('')
+  const [messageType, setMessageType] = useState<'success' | 'error' | ''>('')
+  const [userEmail, setUserEmail] = useState<string>('')
 
   useEffect(() => {
+    const fetchUserEmail = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUserEmail(user.email || '')
+      }
+    }
+
     const fetchData = async () => {
       try {
         const { data: pickersData, error: pickersError } = await supabase
@@ -94,6 +102,8 @@ export default function WastePickers() {
         setLoading(false)
       }
     }
+
+    fetchUserEmail()
     fetchData()
   }, [])
 
@@ -114,26 +124,26 @@ export default function WastePickers() {
 
   const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      setCsvFile(event.target.files[0]);
+      setCsvFile(event.target.files[0])
     }
-  };
+  }
 
   const processCsv = async () => {
     if (!csvFile) {
-      showMessage("Please upload a CSV file.", "error");
-      return;
+      showMessage('Please upload a CSV file.', 'error')
+      return
     }
-    setLoading(true);
-    setMessage("");
-    const reader = new FileReader();
-    reader.readAsText(csvFile);
+    setLoading(true)
+    setMessage('')
+    const reader = new FileReader()
+    reader.readAsText(csvFile)
     reader.onload = async (e) => {
-      const text = e.target?.result as string;
-      if (!text) return;
-      const rows = text.split("\n").slice(1);
+      const text = e.target?.result as string
+      if (!text) return
+      const rows = text.split('\n').slice(1)
       const wastePickers = rows.map((row: string) => {
-        const cols = row.split(",");
-        if (cols.length < 7) return null;
+        const cols = row.split(',')
+        if (cols.length < 7) return null
         return {
           first_name: cols[0].trim(),
           last_name: cols[1].trim(),
@@ -142,52 +152,52 @@ export default function WastePickers() {
           email: cols[4].trim(),
           county: cols[5].trim(),
           id_number: cols[6].trim(),
-        };
-      }).filter(Boolean);
+        }
+      }).filter(Boolean)
       if (wastePickers.length === 0) {
-        showMessage("No valid waste pickers found in the CSV.", "error");
-        setLoading(false);
-        return;
+        showMessage('No valid waste pickers found in the CSV.', 'error')
+        setLoading(false)
+        return
       }
-      const { error } = await supabase.from("waste_pickers").insert(wastePickers);
+      const { error } = await supabase.from('waste_pickers').insert(wastePickers)
       if (error) {
-        showMessage(`Error inserting waste pickers: ${error.message}`, "error");
+        showMessage(`Error inserting waste pickers: ${error.message}`, 'error')
       } else {
-        showMessage("Waste pickers imported successfully!", "success");
-        setIsBulkImportModalOpen(false);
+        showMessage('Waste pickers imported successfully!', 'success')
+        setIsBulkImportModalOpen(false)
         const { data: updatedPickers, error: fetchError } = await supabase
           .from('waste_pickers')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
         if (!fetchError && updatedPickers) {
-          setWastePickers(updatedPickers);
+          setWastePickers(updatedPickers)
         }
       }
-      setLoading(false);
-    };
-  };
+      setLoading(false)
+    }
+  }
 
-  const showMessage = (msg: string, type: "success" | "error") => {
-    setMessage(msg);
-    setMessageType(type);
+  const showMessage = (msg: string, type: 'success' | 'error') => {
+    setMessage(msg)
+    setMessageType(type)
     setTimeout(() => {
-      setMessage("");
-      setMessageType("");
-    }, 5000);
-  };
+      setMessage('')
+      setMessageType('')
+    }, 5000)
+  }
 
   const downloadSampleCsv = () => {
     const sampleCsvContent = `First Name,Last Name,Registration ID,Mobile Number,Email,County,ID Number
 John,Doe,REG001,1234567890,john.doe@example.com,CountyA,ID123456
-Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
-    const blob = new Blob([sampleCsvContent], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "sample_waste_pickers.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`
+    const blob = new Blob([sampleCsvContent], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'sample_waste_pickers.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   const handleExport = (format: string) => {
     const dataToExport = filteredWastePickers.map(picker => ({
@@ -199,22 +209,26 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
       'County': picker.county,
       'ID Number': picker.id_number,
       'Joined': new Date(picker.created_at).toLocaleDateString()
-    }));
+    }))
 
     if (format === 'excel') {
-      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Waste Pickers");
-      XLSX.writeFile(workbook, "WastePickers.xlsx");
+      const worksheet = XLSX.utils.json_to_sheet(dataToExport)
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Waste Pickers')
+      XLSX.writeFile(workbook, 'WastePickers.xlsx')
     } else if (format === 'pdf') {
-      const doc = new jsPDF();
+      const doc = new jsPDF()
+
       // Add logo
-      const logoUrl = '/logo.jpg'; // 
-      doc.addImage(logoUrl, 'PNG', 15, 10, 30, 15);
+      const logoUrl = '/logo.jpg'
+      doc.addImage(logoUrl, 'PNG', 15, 10, 30, 15)
+
       // Add title
-      doc.setFontSize(16);
-      const countyName = selectedCounty || 'All Counties';
-      doc.text(`KeNaWPWA Waste Pickers - ${countyName}`, 50, 25);
+      doc.setFontSize(16)
+      const countyName = selectedCounty || 'All Counties'
+      doc.text(`KeNaWPWA Waste Pickers - ${countyName}`, 15, 35)
+
+      // Add table
       autoTable(doc, {
         head: [['First Name', 'Last Name', 'Registration ID', 'Mobile Number', 'Email', 'County', 'ID Number', 'Joined']],
         body: dataToExport.map(picker => [
@@ -226,11 +240,25 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
           picker['County'],
           picker['ID Number'],
           picker['Joined']
-        ])
-      });
-      doc.save("WastePickers.pdf");
+        ]),
+        startY: 45,
+      })
+
+      // Add footer
+      const currentDate = new Date()
+      const dateTimeString = currentDate.toLocaleString()
+      const footerText = `Downloaded by: ${userEmail} | On: ${dateTimeString}`
+      const pageCount = doc.getNumberOfPages()
+
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i)
+        doc.setFontSize(10)
+        doc.text(footerText, 15, doc.internal.pageSize.height - 10)
+      }
+
+      doc.save('WastePickers.pdf')
     }
-  };
+  }
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
@@ -252,7 +280,7 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
   }
 
   const handleUpdate = async () => {
-    if (!editingId) return;
+    if (!editingId) return
     try {
       const { data, error } = await supabase
         .from('waste_pickers')
@@ -409,10 +437,10 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
                     </div>
                     <input type="file" accept=".csv" onChange={handleCsvUpload} className="border p-2 rounded-md w-full mb-4" />
                     <Button onClick={processCsv} disabled={loading}>
-                      {loading ? "Uploading..." : "Upload"}
+                      {loading ? 'Uploading...' : 'Upload'}
                     </Button>
                     {message && (
-                      <div className={`p-3 rounded-md text-white ${messageType === "success" ? "bg-green-600" : "bg-red-600"}`}>
+                      <div className={`p-3 rounded-md text-white ${messageType === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
                         {message}
                       </div>
                     )}
@@ -457,7 +485,7 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
                     <TableHead>Registration ID</TableHead>
                     <TableHead>Contact</TableHead>
                     <TableHead>County</TableHead>
-                    <TableHead>ID Number</TableHead>                
+                    <TableHead>ID Number</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -486,7 +514,7 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
                         <Badge variant="secondary">{picker.county}</Badge>
                       </TableCell>
                       <TableCell>{picker.id_number}</TableCell>
-                     
+
                       <TableCell>
                         <div className="flex gap-2">
                           <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
@@ -520,38 +548,38 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
                               <Button onClick={handleUpdate}>Save Changes</Button>
                             </DialogContent>
                           </Dialog>
-                            <Dialog>
+                          <Dialog>
                             <DialogTrigger asChild>
                               <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-red-600 hover:text-red-700"
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700"
                               >
-                              <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-4 h-4" />
                               </Button>
                             </DialogTrigger>
                             <DialogContent>
                               <DialogHeader>
-                              <DialogTitle>Confirm Delete</DialogTitle>
+                                <DialogTitle>Confirm Delete</DialogTitle>
                               </DialogHeader>
                               <div className="py-4">
-                              Are you sure you want to delete <span className="font-semibold">{picker.first_name} {picker.last_name}</span>? This action cannot be undone.
+                                Are you sure you want to delete <span className="font-semibold">{picker.first_name} {picker.last_name}</span>? This action cannot be undone.
                               </div>
                               <div className="flex gap-2 justify-end">
-                              <DialogTrigger asChild>
-                                <Button variant="outline">Cancel</Button>
-                              </DialogTrigger>
-                              <DialogTrigger asChild>
-                                <Button
-                                variant="destructive"
-                                onClick={() => handleDelete(picker.id)}
-                                >
-                                Delete
-                                </Button>
-                              </DialogTrigger>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline">Cancel</Button>
+                                </DialogTrigger>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    variant="destructive"
+                                    onClick={() => handleDelete(picker.id)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </DialogTrigger>
                               </div>
                             </DialogContent>
-                            </Dialog>
+                          </Dialog>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -567,8 +595,8 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-500">Entries per page:</span>
                   <Select value={itemsPerPage.toString()} onValueChange={(value) => {
-                    setItemsPerPage(Number(value));
-                    setCurrentPage(1);
+                    setItemsPerPage(Number(value))
+                    setCurrentPage(1)
                   }}>
                     <SelectTrigger className="w-20">
                       <SelectValue placeholder="10" />
@@ -595,10 +623,10 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`;
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                     <Button
                       key={page}
-                      variant={currentPage === page ? "default" : "outline"}
+                      variant={currentPage === page ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setCurrentPage(page)}
-                      className={currentPage === page ? "bg-[#003776] hover:bg-[#4e73df]" : ""}
+                      className={currentPage === page ? 'bg-[#003776] hover:bg-[#4e73df]' : ''}
                     >
                       {page}
                     </Button>
