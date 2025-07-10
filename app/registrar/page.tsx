@@ -155,7 +155,7 @@ export default function MinimalSignup() {
                                 type="submit"
                                 className="w-full bg-[#003776] hover:bg-[#4e73df]"
                             >
-                                Add
+                                Add User
                             </Button>
                         </div>
                     </form>
