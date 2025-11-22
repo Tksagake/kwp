@@ -48,7 +48,7 @@ interface Notification {
   id: string
   title: string
   message: string
-  recipient_type: 'waste_picker' | 'county_manager' | 'all_waste_pickers' | 'all_managers'
+  recipient_type: string
   recipient_id?: string
   sent_at: string
   created_at: string
@@ -58,6 +58,7 @@ export default function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [wastePickers, setWastePickers] = useState<any[]>([])
   const [countyManagers, setCountyManagers] = useState<any[]>([])
+  const [counties, setCounties] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [isComposing, setIsComposing] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -68,7 +69,8 @@ export default function Notifications() {
     title: '',
     message: '',
     recipient_type: '',
-    recipient_id: ''
+    recipient_id: '',
+    selectedCounties: [] as string[]
   })
 
   useEffect(() => {
@@ -98,9 +100,18 @@ export default function Notifications() {
 
         if (managersError) throw managersError
 
+        // Fetch counties
+        const { data: countiesData, error: countiesError } = await supabase
+          .from('counties')
+          .select('id, name, code')
+          .order('name')
+
+        if (countiesError) throw countiesError
+
         setNotifications(notificationsData || [])
         setWastePickers(pickersData || [])
         setCountyManagers(managersData || [])
+        setCounties(countiesData || [])
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
@@ -115,15 +126,41 @@ export default function Notifications() {
     e.preventDefault()
     
     try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .insert([{
+      let notificationsToInsert: any[] = []
+
+      // Check if bulk counties are selected
+      if (formData.recipient_type === 'select_counties') {
+        // Create a notification for each selected county
+        notificationsToInsert = formData.selectedCounties.map((countyId: string) => ({
+          title: formData.title,
+          message: formData.message,
+          recipient_type: `county:${countyId}`,
+          recipient_id: null,
+          sent_at: new Date().toISOString()
+        }))
+      } else if (formData.recipient_type === 'all_counties') {
+        // Create a notification for all counties
+        notificationsToInsert = counties.map((county: any) => ({
+          title: formData.title,
+          message: formData.message,
+          recipient_type: `county:${county.id}`,
+          recipient_id: null,
+          sent_at: new Date().toISOString()
+        }))
+      } else {
+        // Single notification
+        notificationsToInsert = [{
           title: formData.title,
           message: formData.message,
           recipient_type: formData.recipient_type,
           recipient_id: formData.recipient_id || null,
           sent_at: new Date().toISOString()
-        }])
+        }]
+      }
+
+      const { data, error } = await supabase
+        .from('notifications')
+        .insert(notificationsToInsert)
 
       if (error) throw error
 
@@ -140,7 +177,8 @@ export default function Notifications() {
         title: '',
         message: '',
         recipient_type: '',
-        recipient_id: ''
+        recipient_id: '',
+        selectedCounties: []
       })
       setIsComposing(false)
     } catch (error) {
@@ -149,16 +187,22 @@ export default function Notifications() {
   }
 
   const getRecipientText = (notification: Notification) => {
+    // Handle county type stored as "county:id"
+    if (notification.recipient_type.startsWith('county:')) {
+      const county = counties.find((c: any) => c.id === notification.recipient_type.split(':')[1])
+      return county ? county.name : 'Unknown County'
+    }
+
     switch (notification.recipient_type) {
       case 'all_waste_pickers':
         return 'All Waste Pickers'
       case 'all_managers':
         return 'All County Managers'
       case 'waste_picker':
-        const picker = wastePickers.find(p => p.id === notification.recipient_id)
+        const picker = wastePickers.find((p: any) => p.id === notification.recipient_id)
         return picker ? `${picker.first_name} ${picker.last_name}` : 'Unknown Picker'
       case 'county_manager':
-        const manager = countyManagers.find(m => m.id === notification.recipient_id)
+        const manager = countyManagers.find((m: any) => m.id === notification.recipient_id)
         return manager ? `${manager.first_name} ${manager.last_name}` : 'Unknown Manager'
       default:
         return 'Unknown'
@@ -166,6 +210,11 @@ export default function Notifications() {
   }
 
   const getRecipientTypeColor = (type: string) => {
+    // Handle county type
+    if (type.startsWith('county:')) {
+      return 'bg-red-100 text-red-800'
+    }
+
     switch (type) {
       case 'all_waste_pickers':
         return 'bg-blue-100 text-blue-800'
@@ -294,7 +343,7 @@ export default function Notifications() {
                     <Label htmlFor="recipient_type">Recipient Type</Label>
                     <Select 
                       value={formData.recipient_type} 
-                      onValueChange={(value) => setFormData({...formData, recipient_type: value, recipient_id: ''})}
+                      onValueChange={(value) => setFormData({...formData, recipient_type: value, recipient_id: '', selectedCounties: []})}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select recipient type" />
@@ -304,6 +353,13 @@ export default function Notifications() {
                         <SelectItem value="all_managers">All County Managers</SelectItem>
                         <SelectItem value="waste_picker">Individual Waste Picker</SelectItem>
                         <SelectItem value="county_manager">Individual County Manager</SelectItem>
+                        <SelectItem value="all_counties">All Counties (47)</SelectItem>
+                        <SelectItem value="select_counties">Select Specific Counties</SelectItem>
+                        {counties.map((county: any) => (
+                          <SelectItem key={county.id} value={`county:${county.id}`}>
+                            {county.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -340,13 +396,50 @@ export default function Notifications() {
                           <SelectValue placeholder="Select county manager" />
                         </SelectTrigger>
                         <SelectContent>
-                          {countyManagers.map(manager => (
+                          {countyManagers.map((manager: any) => (
                             <SelectItem key={manager.id} value={manager.id}>
                               {manager.first_name} {manager.last_name} (@{manager.username})
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                  )}
+
+                  {formData.recipient_type === 'select_counties' && (
+                    <div className="space-y-2">
+                      <Label>Select Counties</Label>
+                      <div className="border rounded-md p-4 max-h-64 overflow-y-auto">
+                        {counties.map((county: any) => (
+                          <div key={county.id} className="flex items-center gap-2 mb-2">
+                            <input
+                              type="checkbox"
+                              id={`county-${county.id}`}
+                              checked={formData.selectedCounties.includes(county.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setFormData({
+                                    ...formData,
+                                    selectedCounties: [...formData.selectedCounties, county.id]
+                                  })
+                                } else {
+                                  setFormData({
+                                    ...formData,
+                                    selectedCounties: formData.selectedCounties.filter((id: string) => id !== county.id)
+                                  })
+                                }
+                              }}
+                              className="w-4 h-4"
+                            />
+                            <label htmlFor={`county-${county.id}`} className="text-sm cursor-pointer">
+                              {county.name}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Selected: {formData.selectedCounties.length} counties
+                      </div>
                     </div>
                   )}
 
@@ -406,7 +499,7 @@ export default function Notifications() {
                       </TableCell>
                       <TableCell>
                         <Badge className={getRecipientTypeColor(notification.recipient_type)}>
-                          {notification.recipient_type.replace('_', ' ')}
+                          {notification.recipient_type.startsWith('county:') ? 'County' : notification.recipient_type.replace('_', ' ')}
                         </Badge>
                       </TableCell>
                       <TableCell>

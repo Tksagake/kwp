@@ -51,9 +51,15 @@ interface WastePicker {
   created_at: string
 }
 
+interface County {
+  id: string
+  name: string
+  code: string
+}
+
 export default function WastePickers() {
   const [wastePickers, setWastePickers] = useState<WastePicker[]>([])
-  const [counties, setCounties] = useState<string[]>([])
+  const [counties, setCounties] = useState<County[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCounty, setSelectedCounty] = useState<string>('')
@@ -70,6 +76,7 @@ export default function WastePickers() {
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState<'success' | 'error' | ''>('')
   const [userEmail, setUserEmail] = useState<string>('')
+  const [selectedCountyCode, setSelectedCountyCode] = useState<string>('')
 
   useEffect(() => {
     const fetchUserEmail = async () => {
@@ -88,14 +95,11 @@ export default function WastePickers() {
         if (pickersError) throw pickersError
         const { data: countiesData, error: countiesError } = await supabase
           .from('counties')
-          .select('name')
+          .select('id, name, code')
           .order('name')
         if (countiesError) throw countiesError
-        const validCounties = countiesData
-          ?.map(c => c.name)
-          ?.filter(county => county && county.trim() !== '')
         setWastePickers(pickersData || [])
-        setCounties(validCounties || [])
+        setCounties(countiesData || [])
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
@@ -107,7 +111,12 @@ export default function WastePickers() {
     fetchData()
   }, [])
 
-  const filteredWastePickers = wastePickers.filter(picker => {
+  const generateRegId = (countyCode: string): string => {
+    const uniqueDigits = Math.floor(Math.random() * (9999 - 1000 + 1) + 1000)
+    return `WP/${countyCode}/${uniqueDigits}`
+  }
+
+  const filteredWastePickers = wastePickers.filter((picker: any) => {
     const matchesSearch = searchTerm === '' ||
       picker.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       picker.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -362,9 +371,9 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Counties</SelectItem>
-                    {counties.map(county => (
-                      <SelectItem key={county} value={county}>
-                        {county}
+                    {counties.map((county: County) => (
+                      <SelectItem key={county.id} value={county.name}>
+                        {county.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -389,17 +398,24 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`
                   <div className="grid gap-4 py-4">
                     <Input placeholder="First Name" value={newWastePicker.first_name || ''} onChange={(e) => setNewWastePicker({...newWastePicker, first_name: e.target.value})} />
                     <Input placeholder="Last Name" value={newWastePicker.last_name || ''} onChange={(e) => setNewWastePicker({...newWastePicker, last_name: e.target.value})} />
-                    <Input placeholder="Registration ID" value={newWastePicker.reg_id || ''} onChange={(e) => setNewWastePicker({...newWastePicker, reg_id: e.target.value})} />
+                    <Input placeholder="Registration ID" value={newWastePicker.reg_id || ''} disabled className="bg-gray-100 cursor-not-allowed" title="Auto-generated based on county selection" />
                     <Input placeholder="Mobile Number" value={newWastePicker.mobile_number || ''} onChange={(e) => setNewWastePicker({...newWastePicker, mobile_number: e.target.value})} />
                     <Input placeholder="Email" value={newWastePicker.email || ''} onChange={(e) => setNewWastePicker({...newWastePicker, email: e.target.value})} />
                     <Input placeholder="ID Number" value={newWastePicker.id_number || ''} onChange={(e) => setNewWastePicker({...newWastePicker, id_number: e.target.value})} />
-                    <Select value={newWastePicker.county || ''} onValueChange={(value) => setNewWastePicker({...newWastePicker, county: value})}>
+                    <Select value={newWastePicker.county || ''} onValueChange={(value) => {
+                      const selectedCounty = counties.find((c: County) => c.name === value)
+                      if (selectedCounty) {
+                        setSelectedCountyCode(selectedCounty.code)
+                        const regId = generateRegId(selectedCounty.code)
+                        setNewWastePicker({...newWastePicker, county: value, reg_id: regId})
+                      }
+                    }}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select County" />
                       </SelectTrigger>
                       <SelectContent>
-                        {counties.map(county => (
-                          <SelectItem key={county} value={county}>{county}</SelectItem>
+                        {counties.map((county: County) => (
+                          <SelectItem key={county.id} value={county.name}>{county.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -530,17 +546,24 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`
                               <div className="grid gap-4 py-4">
                                 <Input placeholder="First Name" value={newWastePicker.first_name || ''} onChange={(e) => setNewWastePicker({...newWastePicker, first_name: e.target.value})} />
                                 <Input placeholder="Last Name" value={newWastePicker.last_name || ''} onChange={(e) => setNewWastePicker({...newWastePicker, last_name: e.target.value})} />
-                                <Input placeholder="Registration ID" value={newWastePicker.reg_id || ''} onChange={(e) => setNewWastePicker({...newWastePicker, reg_id: e.target.value})} />
+                                <Input placeholder="Registration ID" value={newWastePicker.reg_id || ''} disabled className="bg-gray-100 cursor-not-allowed" title="Auto-generated based on county selection" />
                                 <Input placeholder="Mobile Number" value={newWastePicker.mobile_number || ''} onChange={(e) => setNewWastePicker({...newWastePicker, mobile_number: e.target.value})} />
                                 <Input placeholder="Email" value={newWastePicker.email || ''} onChange={(e) => setNewWastePicker({...newWastePicker, email: e.target.value})} />
                                 <Input placeholder="ID Number" value={newWastePicker.id_number || ''} onChange={(e) => setNewWastePicker({...newWastePicker, id_number: e.target.value})} />
-                                <Select value={newWastePicker.county || ''} onValueChange={(value) => setNewWastePicker({...newWastePicker, county: value})}>
+                                <Select value={newWastePicker.county || ''} onValueChange={(value) => {
+                                  const selectedCounty = counties.find((c: County) => c.name === value)
+                                  if (selectedCounty) {
+                                    setSelectedCountyCode(selectedCounty.code)
+                                    const regId = generateRegId(selectedCounty.code)
+                                    setNewWastePicker({...newWastePicker, county: value, reg_id: regId})
+                                  }
+                                }}>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select County" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {counties.map(county => (
-                                      <SelectItem key={county} value={county}>{county}</SelectItem>
+                                    {counties.map((county: County) => (
+                                      <SelectItem key={county.id} value={county.name}>{county.name}</SelectItem>
                                     ))}
                                   </SelectContent>
                                 </Select>
