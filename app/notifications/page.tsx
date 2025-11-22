@@ -200,10 +200,10 @@ export default function Notifications() {
         return 'All County Managers'
       case 'waste_picker':
         const picker = wastePickers.find((p: any) => p.id === notification.recipient_id)
-        return picker ? `${picker.first_name} ${picker.last_name}` : 'Unknown Picker'
+        return picker ? `Waste Picker: ${picker.first_name} ${picker.last_name}` : 'Unknown Picker'
       case 'county_manager':
         const manager = countyManagers.find((m: any) => m.id === notification.recipient_id)
-        return manager ? `${manager.first_name} ${manager.last_name}` : 'Unknown Manager'
+        return manager ? `County Manager: ${manager.first_name} ${manager.last_name}` : 'Unknown Manager'
       default:
         return 'Unknown'
     }
@@ -481,7 +481,6 @@ export default function Notifications() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Title</TableHead>
-                    <TableHead>Recipient Type</TableHead>
                     <TableHead>Recipient</TableHead>
                     <TableHead>Date Sent</TableHead>
                     <TableHead>Status</TableHead>
@@ -499,11 +498,8 @@ export default function Notifications() {
                       </TableCell>
                       <TableCell>
                         <Badge className={getRecipientTypeColor(notification.recipient_type)}>
-                          {notification.recipient_type.startsWith('county:') ? 'County' : notification.recipient_type.replace('_', ' ')}
+                          {getRecipientText(notification)}
                         </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">{getRecipientText(notification)}</div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
