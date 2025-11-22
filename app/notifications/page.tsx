@@ -131,19 +131,22 @@ export default function Notifications() {
       // Check if bulk counties are selected
       if (formData.recipient_type === 'select_counties') {
         // Create a notification for each selected county
-        notificationsToInsert = formData.selectedCounties.map((countyId: string) => ({
-          title: formData.title,
-          message: formData.message,
-          recipient_type: `county:${countyId}`,
-          recipient_id: null,
-          sent_at: new Date().toISOString()
-        }))
+        notificationsToInsert = formData.selectedCounties.map((countyId: string) => {
+          const county = counties.find((c: any) => c.id === countyId)
+          return {
+            title: formData.title,
+            message: formData.message,
+            recipient_type: county?.name || `county:${countyId}`,
+            recipient_id: null,
+            sent_at: new Date().toISOString()
+          }
+        })
       } else if (formData.recipient_type === 'all_counties') {
         // Create a notification for all counties
         notificationsToInsert = counties.map((county: any) => ({
           title: formData.title,
           message: formData.message,
-          recipient_type: `county:${county.id}`,
+          recipient_type: county.name,
           recipient_id: null,
           sent_at: new Date().toISOString()
         }))
@@ -187,10 +190,10 @@ export default function Notifications() {
   }
 
   const getRecipientText = (notification: Notification) => {
-    // Handle county type stored as "county:id"
-    if (notification.recipient_type.startsWith('county:')) {
-      const county = counties.find((c: any) => c.id === notification.recipient_type.split(':')[1])
-      return county ? county.name : 'Unknown County'
+    // Check if recipient_type is a county name directly
+    const isCountyName = counties.some((c: any) => c.name === notification.recipient_type)
+    if (isCountyName) {
+      return notification.recipient_type
     }
 
     switch (notification.recipient_type) {
@@ -210,8 +213,9 @@ export default function Notifications() {
   }
 
   const getRecipientTypeColor = (type: string) => {
-    // Handle county type
-    if (type.startsWith('county:')) {
+    // Check if type is a county name
+    const isCountyName = counties.some((c: any) => c.name === type)
+    if (isCountyName) {
       return 'bg-red-100 text-red-800'
     }
 
@@ -490,9 +494,9 @@ export default function Notifications() {
                 <TableBody>
                   {currentNotifications.map((notification) => (
                     <TableRow key={notification.id}>
-                      <TableCell>
-                        <div className="font-medium">{notification.title}</div>
-                        <div className="text-sm text-gray-500 max-w-48 truncate">
+                      <TableCell className="max-w-xs">
+                        <div className="font-medium truncate">{notification.title}</div>
+                        <div className="text-sm text-gray-500 break-words line-clamp-2">
                           {notification.message}
                         </div>
                       </TableCell>
