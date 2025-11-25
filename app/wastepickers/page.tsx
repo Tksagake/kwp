@@ -342,7 +342,7 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`
   const handleUpdate = async () => {
     if (!editingId) return
     try {
-      let profileImageUrl = newWastePicker.profile_image
+      let profileImageUrl: string | null | undefined = newWastePicker.profile_image
       if (profileImageFile) {
         profileImageUrl = await uploadProfileImage(profileImageFile)
       }
