@@ -31,6 +31,7 @@ import {
   Edit,
   Trash2,
   Eye,
+  EyeOff,
   Users
 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -81,6 +82,7 @@ export default function WastePickers() {
   const [selectedCountyCode, setSelectedCountyCode] = useState<string>('')
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null)
   const [profileImagePreview, setProfileImagePreview] = useState<string>('')
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     const fetchUserEmail = async () => {
@@ -482,7 +484,16 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`
                     <Input placeholder="Mobile Number" value={newWastePicker.mobile_number || ''} onChange={(e) => setNewWastePicker({...newWastePicker, mobile_number: e.target.value})} />
                     <Input placeholder="Email" type="email" value={newWastePicker.email || ''} onChange={(e) => setNewWastePicker({...newWastePicker, email: e.target.value})} />
                     <Input placeholder="ID Number" value={newWastePicker.id_number || ''} onChange={(e) => setNewWastePicker({...newWastePicker, id_number: e.target.value})} />
-                    <Input placeholder="Password" type="password" value={newWastePicker.password || ''} onChange={(e) => setNewWastePicker({...newWastePicker, password: e.target.value})} />
+                    <div className="relative">
+                      <Input placeholder="Password" type={showPassword ? "text" : "password"} value={newWastePicker.password || ''} onChange={(e) => setNewWastePicker({...newWastePicker, password: e.target.value})} />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                     <Select value={newWastePicker.county || ''} onValueChange={(value) => {
                       const selectedCounty = counties.find((c: County) => c.name === value)
                       if (selectedCounty) {
@@ -653,7 +664,16 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`
                                 <Input placeholder="Mobile Number" value={newWastePicker.mobile_number || ''} onChange={(e) => setNewWastePicker({...newWastePicker, mobile_number: e.target.value})} />
                                 <Input placeholder="Email" type="email" value={newWastePicker.email || ''} onChange={(e) => setNewWastePicker({...newWastePicker, email: e.target.value})} />
                                 <Input placeholder="ID Number" value={newWastePicker.id_number || ''} onChange={(e) => setNewWastePicker({...newWastePicker, id_number: e.target.value})} />
-                                <Input placeholder="Password" type="password" value={newWastePicker.password || ''} onChange={(e) => setNewWastePicker({...newWastePicker, password: e.target.value})} />
+                                <div className="relative">
+                                  <Input placeholder="Password" type={showPassword ? "text" : "password"} value={newWastePicker.password || ''} onChange={(e) => setNewWastePicker({...newWastePicker, password: e.target.value})} />
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
+                                  >
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                  </button>
+                                </div>
                                 <Select value={newWastePicker.county || ''} onValueChange={(value) => {
                                   const selectedCounty = counties.find((c: County) => c.name === value)
                                   if (selectedCounty) {
