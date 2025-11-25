@@ -47,8 +47,10 @@ interface WastePicker {
   county: string
   email: string
   id_number: string
+  password: string
   profile_image?: string
   created_at: string
+  updated_at: string
 }
 
 interface County {
@@ -77,6 +79,8 @@ export default function WastePickers() {
   const [messageType, setMessageType] = useState<'success' | 'error' | ''>('')
   const [userEmail, setUserEmail] = useState<string>('')
   const [selectedCountyCode, setSelectedCountyCode] = useState<string>('')
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null)
+  const [profileImagePreview, setProfileImagePreview] = useState<string>('')
 
   useEffect(() => {
     const fetchUserEmail = async () => {
@@ -114,6 +118,41 @@ export default function WastePickers() {
   const generateRegId = (countyCode: string): string => {
     const uniqueDigits = Math.floor(Math.random() * (9999 - 1000 + 1) + 1000)
     return `WP/${countyCode}/${uniqueDigits}`
+  }
+
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      setProfileImageFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setProfileImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const uploadProfileImage = async (file: File): Promise<string | null> => {
+    try {
+      const fileName = `${Date.now()}-${file.name}`
+      const { data, error } = await supabase.storage
+        .from('profile_images')
+        .upload(fileName, file)
+      
+      if (error) {
+        console.error('Error uploading image:', error)
+        return null
+      }
+
+      const { data: publicUrl } = supabase.storage
+        .from('profile_images')
+        .getPublicUrl(data.path)
+
+      return publicUrl.publicUrl
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      return null
+    }
   }
 
   const filteredWastePickers = wastePickers.filter((picker: any) => {
@@ -275,13 +314,25 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`
 
   const handleCreate = async () => {
     try {
+      let profileImageUrl = null
+      if (profileImageFile) {
+        profileImageUrl = await uploadProfileImage(profileImageFile)
+      }
+
+      const pickerData = {
+        ...newWastePicker,
+        profile_image: profileImageUrl || undefined
+      }
+
       const { data, error } = await supabase
         .from('waste_pickers')
-        .insert(newWastePicker)
+        .insert(pickerData)
         .select()
       if (error) throw error
       setWastePickers([...wastePickers, ...data])
       setNewWastePicker({})
+      setProfileImageFile(null)
+      setProfileImagePreview('')
       setIsAddModalOpen(false)
     } catch (error) {
       console.error('Error creating waste picker:', error)
@@ -291,15 +342,27 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`
   const handleUpdate = async () => {
     if (!editingId) return
     try {
+      let profileImageUrl = newWastePicker.profile_image
+      if (profileImageFile) {
+        profileImageUrl = await uploadProfileImage(profileImageFile)
+      }
+
+      const pickerData = {
+        ...newWastePicker,
+        profile_image: profileImageUrl || undefined
+      }
+
       const { data, error } = await supabase
         .from('waste_pickers')
-        .update(newWastePicker)
+        .update(pickerData)
         .eq('id', editingId)
         .select()
       if (error) throw error
-      setWastePickers(wastePickers.map(picker => picker.id === editingId ? data[0] : picker))
+      setWastePickers(wastePickers.map((picker: WastePicker) => picker.id === editingId ? data[0] : picker))
       setEditingId(null)
       setNewWastePicker({})
+      setProfileImageFile(null)
+      setProfileImagePreview('')
       setIsEditModalOpen(false)
     } catch (error) {
       console.error('Error updating waste picker:', error)
@@ -391,17 +454,35 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`
                     Add New
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Add New Waste Picker</DialogTitle>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
+                    {profileImagePreview && (
+                      <div className="flex justify-center mb-4">
+                        <img src={profileImagePreview} alt="Preview" className="w-24 h-24 rounded-full object-cover" />
+                      </div>
+                    )}
+                    <div className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50">
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleProfileImageChange} 
+                        className="hidden w-full"
+                        id="profile-image-upload"
+                      />
+                      <label htmlFor="profile-image-upload" className="cursor-pointer block">
+                        <div className="text-sm text-gray-600">Click to upload profile image</div>
+                      </label>
+                    </div>
                     <Input placeholder="First Name" value={newWastePicker.first_name || ''} onChange={(e) => setNewWastePicker({...newWastePicker, first_name: e.target.value})} />
                     <Input placeholder="Last Name" value={newWastePicker.last_name || ''} onChange={(e) => setNewWastePicker({...newWastePicker, last_name: e.target.value})} />
                     <Input placeholder="Registration ID" value={newWastePicker.reg_id || ''} disabled className="bg-gray-100 cursor-not-allowed" title="Auto-generated based on county selection" />
                     <Input placeholder="Mobile Number" value={newWastePicker.mobile_number || ''} onChange={(e) => setNewWastePicker({...newWastePicker, mobile_number: e.target.value})} />
-                    <Input placeholder="Email" value={newWastePicker.email || ''} onChange={(e) => setNewWastePicker({...newWastePicker, email: e.target.value})} />
+                    <Input placeholder="Email" type="email" value={newWastePicker.email || ''} onChange={(e) => setNewWastePicker({...newWastePicker, email: e.target.value})} />
                     <Input placeholder="ID Number" value={newWastePicker.id_number || ''} onChange={(e) => setNewWastePicker({...newWastePicker, id_number: e.target.value})} />
+                    <Input placeholder="Password" type="password" value={newWastePicker.password || ''} onChange={(e) => setNewWastePicker({...newWastePicker, password: e.target.value})} />
                     <Select value={newWastePicker.county || ''} onValueChange={(value) => {
                       const selectedCounty = counties.find((c: County) => c.name === value)
                       if (selectedCounty) {
@@ -539,17 +620,40 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`
                                 <Edit className="w-4 h-4" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent>
+                            <DialogContent className="max-h-[90vh] overflow-y-auto">
                               <DialogHeader>
                                 <DialogTitle>Edit Waste Picker</DialogTitle>
                               </DialogHeader>
                               <div className="grid gap-4 py-4">
+                                {profileImagePreview && (
+                                  <div className="flex justify-center mb-4">
+                                    <img src={profileImagePreview} alt="Preview" className="w-24 h-24 rounded-full object-cover" />
+                                  </div>
+                                )}
+                                {newWastePicker.profile_image && !profileImagePreview && (
+                                  <div className="flex justify-center mb-4">
+                                    <img src={newWastePicker.profile_image} alt="Current" className="w-24 h-24 rounded-full object-cover" />
+                                  </div>
+                                )}
+                                <div className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50">
+                                  <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    onChange={handleProfileImageChange} 
+                                    className="hidden w-full"
+                                    id="profile-image-edit"
+                                  />
+                                  <label htmlFor="profile-image-edit" className="cursor-pointer block">
+                                    <div className="text-sm text-gray-600">Click to update profile image</div>
+                                  </label>
+                                </div>
                                 <Input placeholder="First Name" value={newWastePicker.first_name || ''} onChange={(e) => setNewWastePicker({...newWastePicker, first_name: e.target.value})} />
                                 <Input placeholder="Last Name" value={newWastePicker.last_name || ''} onChange={(e) => setNewWastePicker({...newWastePicker, last_name: e.target.value})} />
                                 <Input placeholder="Registration ID" value={newWastePicker.reg_id || ''} disabled className="bg-gray-100 cursor-not-allowed" title="Auto-generated based on county selection" />
                                 <Input placeholder="Mobile Number" value={newWastePicker.mobile_number || ''} onChange={(e) => setNewWastePicker({...newWastePicker, mobile_number: e.target.value})} />
-                                <Input placeholder="Email" value={newWastePicker.email || ''} onChange={(e) => setNewWastePicker({...newWastePicker, email: e.target.value})} />
+                                <Input placeholder="Email" type="email" value={newWastePicker.email || ''} onChange={(e) => setNewWastePicker({...newWastePicker, email: e.target.value})} />
                                 <Input placeholder="ID Number" value={newWastePicker.id_number || ''} onChange={(e) => setNewWastePicker({...newWastePicker, id_number: e.target.value})} />
+                                <Input placeholder="Password" type="password" value={newWastePicker.password || ''} onChange={(e) => setNewWastePicker({...newWastePicker, password: e.target.value})} />
                                 <Select value={newWastePicker.county || ''} onValueChange={(value) => {
                                   const selectedCounty = counties.find((c: County) => c.name === value)
                                   if (selectedCounty) {
