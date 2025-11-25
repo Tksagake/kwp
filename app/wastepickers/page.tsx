@@ -193,15 +193,16 @@ export default function WastePickers() {
       const rows = text.split('\n').slice(1)
       const wastePickers = rows.map((row: string) => {
         const cols = row.split(',')
-        if (cols.length < 7) return null
+        if (cols.length < 8) return null
         return {
           first_name: cols[0].trim(),
           last_name: cols[1].trim(),
           reg_id: cols[2].trim(),
           mobile_number: cols[3].trim(),
-          email: cols[4].trim(),
+          email: cols[4].trim() || null,
           county: cols[5].trim(),
           id_number: cols[6].trim(),
+          password: cols[7].trim(),
         }
       }).filter(Boolean)
       if (wastePickers.length === 0) {
@@ -237,9 +238,9 @@ export default function WastePickers() {
   }
 
   const downloadSampleCsv = () => {
-    const sampleCsvContent = `First Name,Last Name,Registration ID,Mobile Number,Email,County,ID Number
-John,Doe,REG001,1234567890,john.doe@example.com,CountyA,ID123456
-Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`
+    const sampleCsvContent = `First Name,Last Name,Registration ID,Mobile Number,Email,County,ID Number,Password
+John,Doe,WP/001/1234,1234567890,john.doe@example.com,Nairobi,ID123456,SecurePass123
+Jane,Smith,WP/002/5678,0987654321,jane.smith@example.com,Mombasa,ID789012,SecurePass456`
     const blob = new Blob([sampleCsvContent], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -534,11 +535,12 @@ Jane,Smith,REG002,0987654321,jane.smith@example.com,CountyB,ID789012`
                         <li>Last Name</li>
                         <li>Registration ID</li>
                         <li>Mobile Number</li>
-                        <li>Email</li>
+                        <li>Email (optional)</li>
                         <li>County</li>
                         <li>ID Number</li>
+                        <li>Password</li>
                       </ul>
-                      <p>2. Download the sample CSV template to see the correct format.</p>
+                      <p className="mt-2">2. Download the sample CSV template to see the correct format.</p>
                       <Button onClick={downloadSampleCsv} variant="outline">
                         Download Sample CSV Template
                       </Button>
