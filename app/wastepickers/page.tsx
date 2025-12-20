@@ -97,6 +97,7 @@ export default function WastePickers() {
         const { data: pickersData, error: pickersError } = await supabase
           .from('waste_pickers')
           .select('*')
+          .eq('county', 'Kisumu')
           .order('created_at', { ascending: false })
         if (pickersError) throw pickersError
         const { data: countiesData, error: countiesError } = await supabase
@@ -200,7 +201,7 @@ export default function WastePickers() {
           reg_id: cols[2].trim(),
           mobile_number: cols[3].trim(),
           email: cols[4].trim() || null,
-          county: cols[5].trim(),
+          county: 'Kisumu',
           id_number: cols[6].trim(),
           password: cols[7].trim(),
         }
@@ -219,6 +220,7 @@ export default function WastePickers() {
         const { data: updatedPickers, error: fetchError } = await supabase
           .from('waste_pickers')
           .select('*')
+          .eq('county', 'Kisumu')
           .order('created_at', { ascending: false })
         if (!fetchError && updatedPickers) {
           setWastePickers(updatedPickers)
@@ -257,7 +259,6 @@ Jane,Smith,WP/002/5678,0987654321,jane.smith@example.com,Mombasa,ID789012,Secure
       'Registration ID': picker.reg_id,
       'Mobile Number': picker.mobile_number,
       'Email': picker.email,
-      'County': picker.county,
       'ID Number': picker.id_number,
       'Joined': new Date(picker.created_at).toLocaleDateString()
     }))
@@ -271,24 +272,23 @@ Jane,Smith,WP/002/5678,0987654321,jane.smith@example.com,Mombasa,ID789012,Secure
       const doc = new jsPDF()
 
       // Add logo
-      const logoUrl = '/logo.jpg'
+      const logoUrl = '/logo.png'
       doc.addImage(logoUrl, 'PNG', 15, 10, 30, 15)
 
       // Add title
       doc.setFontSize(16)
       const countyName = selectedCounty || 'All Counties'
-      doc.text(`KeNaWPWA Waste Pickers - ${countyName}`, 15, 35)
+      doc.text(`KiWAPWA Waste Pickers - ${countyName}`, 15, 35)
 
       // Add table
       autoTable(doc, {
-        head: [['First Name', 'Last Name', 'Registration ID', 'Mobile Number', 'Email', 'County', 'ID Number', 'Joined']],
+        head: [['First Name', 'Last Name', 'Registration ID', 'Mobile Number', 'Email', 'ID Number', 'Joined']],
         body: dataToExport.map(picker => [
           picker['First Name'],
           picker['Last Name'],
           picker['Registration ID'],
           picker['Mobile Number'],
           picker['Email'],
-          picker['County'],
           picker['ID Number'],
           picker['Joined']
         ]),
@@ -324,6 +324,7 @@ Jane,Smith,WP/002/5678,0987654321,jane.smith@example.com,Mombasa,ID789012,Secure
 
       const pickerData = {
         ...newWastePicker,
+        county: 'Kisumu',
         profile_image: profileImageUrl || undefined
       }
 
@@ -395,7 +396,7 @@ Jane,Smith,WP/002/5678,0987654321,jane.smith@example.com,Mombasa,ID789012,Secure
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#003776]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
         </div>
       </DashboardLayout>
     )
@@ -495,21 +496,19 @@ Jane,Smith,WP/002/5678,0987654321,jane.smith@example.com,Mombasa,ID789012,Secure
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
-                    <Select value={newWastePicker.county || ''} onValueChange={(value) => {
+                    <Select value={newWastePicker.county || 'Kisumu'} onValueChange={(value) => {
                       const selectedCounty = counties.find((c: County) => c.name === value)
                       if (selectedCounty) {
                         setSelectedCountyCode(selectedCounty.code)
                         const regId = generateRegId(selectedCounty.code)
-                        setNewWastePicker({...newWastePicker, county: value, reg_id: regId})
+                        setNewWastePicker({...newWastePicker, county: 'Kisumu', reg_id: regId})
                       }
-                    }}>
+                    }} disabled>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select County" />
+                        <SelectValue placeholder="Kisumu" />
                       </SelectTrigger>
                       <SelectContent>
-                        {counties.map((county: County) => (
-                          <SelectItem key={county.id} value={county.name}>{county.name}</SelectItem>
-                        ))}
+                        <SelectItem value="Kisumu">Kisumu</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -594,7 +593,6 @@ Jane,Smith,WP/002/5678,0987654321,jane.smith@example.com,Mombasa,ID789012,Secure
                     <TableHead>Member</TableHead>
                     <TableHead>Registration ID</TableHead>
                     <TableHead>Contact</TableHead>
-                    <TableHead>County</TableHead>
                     <TableHead>ID Number</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -620,9 +618,6 @@ Jane,Smith,WP/002/5678,0987654321,jane.smith@example.com,Mombasa,ID789012,Secure
                         <Badge variant="outline">{picker.reg_id}</Badge>
                       </TableCell>
                       <TableCell>{picker.mobile_number}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{picker.county}</Badge>
-                      </TableCell>
                       <TableCell>{picker.id_number}</TableCell>
 
                       <TableCell>
@@ -676,21 +671,12 @@ Jane,Smith,WP/002/5678,0987654321,jane.smith@example.com,Mombasa,ID789012,Secure
                                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                   </button>
                                 </div>
-                                <Select value={newWastePicker.county || ''} onValueChange={(value) => {
-                                  const selectedCounty = counties.find((c: County) => c.name === value)
-                                  if (selectedCounty) {
-                                    setSelectedCountyCode(selectedCounty.code)
-                                    const regId = generateRegId(selectedCounty.code)
-                                    setNewWastePicker({...newWastePicker, county: value, reg_id: regId})
-                                  }
-                                }}>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select County" />
+                                <Select value={newWastePicker.county || 'Kisumu'} disabled>
+                                  <SelectTrigger className="bg-gray-100 cursor-not-allowed">
+                                    <SelectValue placeholder="Kisumu" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {counties.map((county: County) => (
-                                      <SelectItem key={county.id} value={county.name}>{county.name}</SelectItem>
-                                    ))}
+                                    <SelectItem value="Kisumu">Kisumu</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>

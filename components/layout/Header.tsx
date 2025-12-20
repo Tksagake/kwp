@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { supabase } from '@/lib/supabase'
+import { ThemeToggle } from '@/components/ThemeProvider'
 import { LogOut, Bell, Settings } from 'lucide-react'
 
 export default function Header() {
@@ -14,27 +15,28 @@ export default function Header() {
   }
 
   return (
-    <header className="bg-white border-b px-6 py-4 lg:pl-4">
+    <header className="bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 px-6 py-4 lg:pl-4 shadow-sm">
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-4">
-          <h1 className="text-sm font-bold text-[#003776]">
-            KENYA NATIONAL WASTE PICKERS WELFARE ASSOCIATION INFORMATION MANAGEMENT SYSTEM
+          <h1 className="text-sm font-bold text-green-600 dark:text-green-400">
+            KIWAPWA: KISUMU WASTE PICKERS WELFARE ASSOCIATION INFORMATION MANAGEMENT SYSTEM
           </h1>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
             <Bell className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
             <Settings className="w-4 h-4" />
           </Button>
+          <ThemeToggle />
           <div className="flex items-center gap-2">
-            <Badge variant="secondary">Online</Badge>
+            <Badge variant="secondary" className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">Online</Badge>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleLogout}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
             >
               <LogOut className="w-4 h-4 mr-2" />
               Log Out

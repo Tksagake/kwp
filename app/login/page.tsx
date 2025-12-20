@@ -43,24 +43,24 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-600">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-white to-gray-50">
       <div className="flex flex-col items-center mb-6">
-        <h1 className="mt-4 text-4xl text-white text-center">
-          KENYA NATIONAL WASTE PICKERS
+        <h1 className="mt-4 text-4xl text-green-500 font-bold text-center">
+          KIWAPWA
         </h1>
-        <h2 className="text-3xl text-white text-center">
-          WELFARE ASSOCIATION
+        <h2 className="text-3xl text-green-600 text-center">
+          Kisumu Waste Pickers Welfare Association
         </h2>
-        <p className="text-sm text-white text-center">
+        <p className="text-sm text-green-700 text-center">
           Information Management System
         </p>
-        <div className="w-36 h-36 bg-[#003776] rounded-full flex items-center justify-center mt-4">
-          <img src="/logo.jpg" alt="KeNaWPWA Logo" className="w-30 h-30 rounded-full" />
+        <div className="w-36 h-36 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center mt-4 shadow-lg">
+          <img src="/logo.png" alt="KiWaPWA Logo" className="w-30 h-30 rounded-full" />
         </div>
       </div>
-      <Card className="w-full max-w-4xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl font-bold text-[#003776]">Log In</CardTitle>
+      <Card className="w-full max-w-4xl shadow-xl border-green-200">
+        <CardHeader className="text-center bg-gradient-to-r from-green-50 to-green-100">
+          <CardTitle className="text-xl font-bold text-green-600">Log In</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
@@ -105,7 +105,7 @@ export default function LoginPage() {
             <div className="flex justify-center">
               <Button
               type="submit"
-              className="w-auto px-6 bg-[#003776] hover:bg-[#4e73df]"
+              className="w-auto px-6 bg-green-500 hover:bg-green-600 text-white font-semibold"
               disabled={loading}
               >
               {loading ? (
@@ -121,9 +121,9 @@ export default function LoginPage() {
           </form>
         </CardContent>
       </Card>
-      <footer className="mt-8 text-white text-center">
+      <footer className="mt-8 text-green-700 text-center">
         <p>
-          Copyright © KeNaWPWA {new Date().getFullYear()} powered by MaraTech
+          Copyright © KiWaPWA {new Date().getFullYear()} powered by MaraTech
         </p>
       </footer>
     </div>

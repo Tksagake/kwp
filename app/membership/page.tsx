@@ -64,18 +64,27 @@ export default function Membership() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch waste pickers
+        // Fetch waste pickers from Kisumu county only
         const { data: wastePickers, error: pickersError } = await supabase
           .from('waste_pickers')
           .select('*')
+          .eq('county', 'Kisumu')
           .order('created_at', { ascending: false })
 
         if (pickersError) throw pickersError
 
-        // Fetch contributions for each member
+        // Fetch contributions for Kisumu members only
         const { data: contributions, error: contributionsError } = await supabase
           .from('contributions')
-          .select('member_id, amount, date')
+          .select(`
+            member_id,
+            amount,
+            date,
+            waste_pickers!inner (
+              county
+            )
+          `)
+          .eq('waste_pickers.county', 'Kisumu')
           .order('date', { ascending: false })
 
         if (contributionsError) throw contributionsError

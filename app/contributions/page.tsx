@@ -79,7 +79,7 @@ export default function Contributions() {
           .from('contributions')
           .select(`
             *,
-            waste_pickers (
+            waste_pickers!inner (
               id,
               first_name,
               last_name,
@@ -87,12 +87,14 @@ export default function Contributions() {
               county
             )
           `)
+          .eq('waste_pickers.county', 'Kisumu')
           .order('date', { ascending: false })
         if (contributionsError) throw contributionsError
 
         const { data: wastePickersData, error: wastePickersError } = await supabase
           .from('waste_pickers')
           .select('id, first_name, last_name, reg_id, county')
+          .eq('county', 'Kisumu')
         if (wastePickersError) throw wastePickersError
 
         const { data: countiesData, error: countiesError } = await supabase

@@ -20,7 +20,7 @@ interface DashboardStats {
   totalManagers: number;
   totalContributions: number;
   monthlyTrend: Array<{ month: string; registrations: number }>;
-  contributionsByCounty: Array<{ county: string; amount: number }>;
+  monthlyContributions: Array<{ month: string; amount: number }>;
 }
 
 export default function Dashboard() {
@@ -30,10 +30,11 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch total waste pickers
+        // Fetch total waste pickers from Kisumu only
         const { count: wastePickers } = await supabase
           .from('waste_pickers')
-          .select('*', { count: 'exact', head: true });
+          .select('*', { count: 'exact', head: true })
+          .eq('county', 'Kisumu');
 
         // Fetch total counties
         const { count: counties } = await supabase
@@ -45,10 +46,14 @@ export default function Dashboard() {
           .from('county_managers')
           .select('*', { count: 'exact', head: true });
 
-        // Fetch total contributions
+        // Fetch total contributions from Kisumu only
         const { data: contributions } = await supabase
           .from('contributions')
-          .select('amount');
+          .select(`
+            amount,
+            waste_pickers!inner(county)
+          `)
+          .eq('waste_pickers.county', 'Kisumu');
 
         const totalContributions = contributions?.reduce((sum, c) => sum + Number(c.amount), 0) || 0;
 
@@ -62,30 +67,35 @@ export default function Dashboard() {
           { month: 'Jun', registrations: 47 },
         ];
 
-        // Fetch contributions by county
+        // Fetch contributions by Kisumu only
         const { data: contributionsByCounty } = await supabase
           .from('contributions')
           .select(`
             amount,
             waste_pickers!inner(county)
-          `);
+          `)
+          .eq('waste_pickers.county', 'Kisumu');
 
-        const countyContributions = contributionsByCounty?.reduce((acc: Record<string, number>, item: Contribution) => {
-          // waste_pickers is now an array, so use the first element if available
-          const county = item.waste_pickers && item.waste_pickers.length > 0
-            ? item.waste_pickers[0].county
-            : 'Kenya';
-          if (!acc[county]) {
-            acc[county] = 0;
-          }
-          acc[county] += Number(item.amount);
-          return acc;
-        }, {} as Record<string, number>) || {};
-
-        const contributionsByCountyArray = Object.entries(countyContributions)
-          .map(([county, amount]) => ({ county, amount }))
-          .sort((a, b) => b.amount - a.amount)
-          .slice(0, 5);
+        // Calculate monthly contributions for the last 6 months
+        const monthlyContributions: Record<string, number> = {};
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+        
+        if (contributions && contributions.length > 0) {
+          contributions.forEach((c: any) => {
+            const date = new Date(c.created_at);
+            const monthIndex = date.getMonth();
+            const monthName = monthNames[monthIndex] || monthNames[monthIndex % 12];
+            if (!monthlyContributions[monthName]) {
+              monthlyContributions[monthName] = 0;
+            }
+            monthlyContributions[monthName] += Number(c.amount);
+          });
+        }
+        
+        const monthlyContributionsArray = monthNames.map(month => ({
+          month,
+          amount: monthlyContributions[month] || 0
+        }));
 
         setStats({
           totalWastePickers: wastePickers || 0,
@@ -93,7 +103,7 @@ export default function Dashboard() {
           totalManagers: managers || 0,
           totalContributions,
           monthlyTrend,
-          contributionsByCounty: contributionsByCountyArray,
+          monthlyContributions: monthlyContributionsArray,
         });
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -109,7 +119,7 @@ export default function Dashboard() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#003776]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
         </div>
       </DashboardLayout>
     );
@@ -119,7 +129,7 @@ export default function Dashboard() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
           <Badge variant="outline" className="text-green-600 border-green-600">
             <Activity className="w-3 h-3 mr-1" />
             System Active
@@ -196,9 +206,9 @@ export default function Dashboard() {
                   <Line
                     type="monotone"
                     dataKey="registrations"
-                    stroke="#003776"
+                    stroke="#22c55e"
                     strokeWidth={2}
-                    dot={{ fill: '#003776' }}
+                    dot={{ fill: '#22c55e' }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -206,16 +216,16 @@ export default function Dashboard() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Total Contributions</CardTitle>
+              <CardTitle>Monthly Contributions (Last 6 Months)</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats?.contributionsByCounty}>
+                <BarChart data={stats?.monthlyContributions}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="county" />
+                  <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip formatter={(value) => [`KES ${Number(value).toLocaleString()}`, 'Amount']} />
-                  <Bar dataKey="amount" fill="#4e73df" />
+                  <Bar dataKey="amount" fill="#22c55e" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
