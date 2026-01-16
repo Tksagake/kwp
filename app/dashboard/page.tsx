@@ -5,7 +5,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
-import { Users, UserCheck, MapPin, DollarSign, TrendingUp, TrendingDown, Activity } from 'lucide-react'
+import { Users, UserCheck, DollarSign, TrendingUp, TrendingDown, Activity } from 'lucide-react'
 
 interface Contribution {
   amount: number;
@@ -136,7 +136,7 @@ export default function Dashboard() {
           </Badge>
         </div>
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card colorScheme="primary">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Waste Pickers</CardTitle>
@@ -163,19 +163,7 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-          <Card colorScheme="warning">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Counties</CardTitle>
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalCounties}</div>
-              <div className="flex items-center text-xs text-muted-foreground">
-                <Activity className="h-3 w-3 mr-1 text-blue-500" />
-                All counties active
-              </div>
-            </CardContent>
-          </Card>
+
           <Card colorScheme="danger">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Contributions</CardTitle>
@@ -242,7 +230,7 @@ export default function Dashboard() {
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">New waste picker registered</p>
-                  <p className="text-xs text-gray-500">joined from Nairobi County</p>
+                  <p className="text-xs text-gray-500">from Kisumu County</p>
                 </div>
                 <span className="text-xs text-gray-500">2 hours ago</span>
               </div>
