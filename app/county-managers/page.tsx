@@ -330,9 +330,7 @@ Jane,Smith,janesmith,0987654321,jane.smith@example.com,CountyB`
               </div>
               <div className="flex gap-2">
                 <Select value={selectedCounty} onValueChange={setSelectedCounty}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Filter by county" />
-                  </SelectTrigger>
+                  
                   <SelectContent>
                     <SelectItem value="all">All Counties</SelectItem>
                     {counties.map(county => (
