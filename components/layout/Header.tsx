@@ -19,16 +19,11 @@ export default function Header() {
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-4">
           <h1 className="text-sm font-bold text-green-600 dark:text-green-400">
-            KIWAPWA: KISUMU WASTE PICKERS WELFARE ASSOCIATION INFORMATION MANAGEMENT SYSTEM
+            KISUMU WASTE PICKERS WELFARE ASSOCIATION INFORMATION MANAGEMENT SYSTEM
           </h1>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" className="text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
-            <Bell className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm" className="text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
-            <Settings className="w-4 h-4" />
-          </Button>
+          
           <ThemeToggle />
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">Online</Badge>
