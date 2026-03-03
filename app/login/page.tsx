@@ -2,11 +2,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
@@ -22,7 +19,7 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
@@ -31,101 +28,179 @@ export default function LoginPage() {
       } else {
         router.push('/dashboard')
       }
-    } catch (error) {
+    } catch {
       setError('An unexpected error occurred')
     } finally {
       setLoading(false)
     }
   }
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword)
-  }
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-white to-gray-50">
-      <div className="flex flex-col items-center mb-6">
-        <h1 className="mt-4 text-4xl text-green-500 font-bold text-center">
-          KIWAPWA
-        </h1>
-        <h2 className="text-3xl text-green-600 text-center">
-          Kisumu Waste Pickers Welfare Association
-        </h2>
-        <p className="text-sm text-green-700 text-center">
-          Information Management System
-        </p>
-        <div className="w-36 h-36 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center mt-4 shadow-lg">
-          <img src="/logo.png" alt="KiWaPWA Logo" className="w-30 h-30 rounded-full" />
-        </div>
-      </div>
-      <Card className="w-full max-w-4xl shadow-xl border-green-200">
-        <CardHeader className="text-center bg-gradient-to-r from-green-50 to-green-100">
-          <CardTitle className="text-xl font-bold text-green-600">Log In</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
+
+      {/* LEFT SIDE — Institutional Identity Panel */}
+      <div className="hidden lg:flex relative flex-col justify-center px-16 py-16 bg-[#0E3B2E] text-white">
+
+        <div className="max-w-md">
+          
+          {/* Logo */}
+          <div className="mb-14">
+            <div className="w-20 h-20 bg-white rounded-md flex items-center justify-center">
+              <img
+                src="/logo.png"
+                alt="KiWaPWA Logo"
+                className="w-16 h-16 object-contain"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
+          </div>
+
+          {/* Organization Name */}
+          <h1 className="text-4xl font-semibold tracking-wide mb-4">
+            KIWAPWA
+          </h1>
+
+          <p className="text-lg text-white/85 mb-6 leading-relaxed">
+            Kisumu Waste Pickers Welfare Association
+          </p>
+
+          <div className="w-16 h-px bg-white/30 mb-6"></div>
+
+          <p className="text-xs uppercase tracking-[0.2em] text-white/70 mb-6">
+            Information Management System
+          </p>
+
+          <p className="text-sm text-white/75 leading-relaxed max-w-sm">
+            Secure member records and administrative access portal for authorized personnel.
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="absolute bottom-10 left-16 text-white/50 text-xs">
+          <p>© KiWaPWA {new Date().getFullYear()} • Powered by MaraTech</p>
+        </div>
+      </div>
+
+
+      {/* RIGHT SIDE — Login Panel */}
+      <div className="bg-white lg:bg-gray-50 flex flex-col items-center justify-center px-6 py-12">
+
+        {/* Mobile Branding */}
+        <div className="lg:hidden mb-10 text-center">
+          <div className="flex justify-center mb-6">
+            <div className="w-14 h-14 bg-gray-100 border border-gray-300 rounded-md flex items-center justify-center">
+              <img
+                src="/logo.png"
+                alt="KiWaPWA Logo"
+                className="w-12 h-12 object-contain"
+              />
+            </div>
+          </div>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2 tracking-wide">
+            KIWAPWA
+          </h1>
+          <p className="text-sm text-gray-700">
+            Kisumu Waste Pickers Welfare Association
+          </p>
+          <p className="text-xs uppercase tracking-widest text-gray-600 mt-2">
+            Information Management System
+          </p>
+        </div>
+
+        {/* Login Card */}
+        <div className="w-full max-w-md bg-white border border-gray-200 rounded-md shadow-sm">
+
+          <div className="px-10 py-10 border-b border-gray-100">
+            <h2 className="text-2xl font-semibold text-gray-900 text-center mb-2">
+              System Login
+            </h2>
+            <p className="text-sm text-gray-600 text-center">
+              Enter your credentials to access the system
+            </p>
+          </div>
+
+          <div className="px-10 py-10">
+            <form onSubmit={handleLogin} className="space-y-6">
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium text-gray-900">
+                  Email Address
+                </Label>
                 <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="border-gray-300 focus:ring-[#0E3B2E] focus:border-[#0E3B2E]"
                 />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full"
-                  onClick={togglePasswordVisibility}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
               </div>
-            </div>
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            <div className="flex justify-center">
-              <Button
-              type="submit"
-              className="w-auto px-6 bg-green-500 hover:bg-green-600 text-white font-semibold"
-              disabled={loading}
-              >
-              {loading ? (
-                <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Signing in...
-                </>
-              ) : (
-                'Sign in'
+
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-gray-900">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="border-gray-300 focus:ring-[#0E3B2E] focus:border-[#0E3B2E] pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-300 rounded-md p-3">
+                  <p className="text-red-800 text-sm">{error}</p>
+                </div>
               )}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-      <footer className="mt-8 text-green-700 text-center">
-        <p>
-          Copyright © KiWaPWA {new Date().getFullYear()} powered by MaraTech
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 bg-[#0E3B2E] hover:bg-[#0B3026] disabled:bg-gray-400 text-white font-medium rounded-md transition-colors"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Signing in...
+                  </span>
+                ) : (
+                  'Sign In'
+                )}
+              </button>
+
+            </form>
+          </div>
+        </div>
+
+        <p className="text-center text-gray-500 text-xs mt-6">
+          For account support, contact administration
         </p>
-      </footer>
+
+        {/* Footer */}
+        <footer className="mt-auto pt-12 text-center border-t border-gray-200 lg:border-t-0">
+          <p className="text-gray-600 text-xs">
+            © KiWaPWA {new Date().getFullYear()} • Powered by MaraTech
+          </p>
+        </footer>
+
+      </div>
     </div>
   )
 }

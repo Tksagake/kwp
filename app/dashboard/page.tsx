@@ -172,7 +172,7 @@ export default function Dashboard() {
               <div className="text-2xl font-bold">County 042</div>
               <div className="flex items-center text-xs text-muted-foreground">
                 <Activity className="h-3 w-3 mr-1 text-blue-500" />
-                All counties active
+                City of Kisumu
               </div>
             </CardContent>
           </Card>
